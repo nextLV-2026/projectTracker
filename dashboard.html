@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project Tracker — Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+    :root {
+      --bg:#0f1117; --surface:#1a1d27; --surface2:#222536; --surface3:#292d42;
+      --border:#2e3150; --accent:#6c63ff; --accent-light:#8b85ff;
+      --text:#e8e9f0; --text-sub:#8b8fa8;
+      --danger:#ff5c5c; --success:#4caf82; --warning:#f5a623;
+      --radius:12px; --radius-sm:8px;
+      --sidebar:320px; --nav:56px;
+    }
+
+    body {
+      background:var(--bg); color:var(--text);
+      font-family:'Segoe UI','Apple SD Gothic Neo',sans-serif;
+      min-height:100vh; display:flex; flex-direction:column;
+    }
+
+    /* ── Topnav ── */
+    nav {
+      height:var(--nav); background:var(--surface); border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 24px; flex-shrink:0; position:sticky; top:0; z-index:200;
+    }
+    .logo { display:flex; align-items:center; gap:10px; font-size:16px; font-weight:800; }
+    .logo .dot { width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
+    .nav-proj { font-size:13px; color:var(--text-sub); }
+    .nav-proj span { color:var(--text); font-weight:600; margin-left:4px; }
+    .nav-right { display:flex; align-items:center; gap:12px; }
+    .sync-pill {
+      display:flex; align-items:center; gap:7px;
+      background:rgba(76,175,130,0.1); border:1px solid rgba(76,175,130,0.25);
+      border-radius:20px; padding:5px 12px; font-size:12px; color:var(--success);
+    }
+    .sync-dot { width:6px; height:6px; border-radius:50%; background:var(--success); animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .nav-btn {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:var(--radius-sm); color:var(--text-sub); font-size:12px;
+      padding:6px 14px; cursor:pointer; transition:all 0.2s;
+    }
+    .nav-btn:hover { border-color:var(--accent); color:var(--accent-light); }
+
+    /* ── Layout: sidebar fixed right, main scrollable ── */
+    .layout {
+      display:flex; flex:1;
+      /* sidebar is fixed, so main needs right margin */
+    }
+
+    main {
+      flex:1;
+      margin-right:var(--sidebar);
+      padding:28px;
+      overflow-y:auto;
+    }
+
+    /* ── Section header ── */
+    .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+    .section-title { font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px; }
+    .section-title .badge { font-size:11px; font-weight:600; background:rgba(108,99,255,0.15); color:var(--accent-light); padding:2px 10px; border-radius:20px; }
+    .small-btn { background:none; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-sub); font-size:11px; padding:4px 10px; cursor:pointer; }
+    .small-btn:hover { border-color:var(--accent); color:var(--accent-light); }
+
+    /* ── Sprint bar ── */
+    .sprint-bar {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      padding:18px 22px; margin-bottom:28px; display:flex; align-items:center; gap:24px;
+    }
+    .sprint-info h3 { font-size:14px; font-weight:700; }
+    .sprint-info p { font-size:12px; color:var(--text-sub); margin-top:3px; }
+    .sprint-progress { flex:1; }
+    .prog-label { display:flex; justify-content:space-between; font-size:11px; color:var(--text-sub); margin-bottom:6px; }
+    .prog-track { background:var(--surface2); border-radius:20px; height:6px; }
+    .prog-fill { height:6px; border-radius:20px; background:linear-gradient(90deg,var(--accent),var(--accent-light)); width:42%; }
+    .sprint-stats { display:flex; gap:20px; }
+    .stat { text-align:center; }
+    .stat .val { font-size:20px; font-weight:800; }
+    .stat .lbl { font-size:10px; color:var(--text-sub); margin-top:2px; }
+    .stat.done .val { color:var(--success); }
+    .stat.prog .val { color:var(--accent-light); }
+    .stat.todo .val { color:var(--text-sub); }
+
+    /* ── Member grid ── */
+    .member-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:28px; }
+    .member-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+    .mc-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .mc-avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; flex-shrink:0; }
+    .mc-info h4 { font-size:13px; font-weight:700; }
+    .mc-info p { font-size:11px; color:var(--accent-light); margin-top:1px; }
+    .mc-summary { font-size:11px; color:var(--text-sub); line-height:1.7; }
+
+    /* ── Kanban ── */
+    .kanban { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:40px; }
+    .col { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; min-height:420px; display:flex; flex-direction:column; gap:10px; }
+    .col-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+    .col-title { font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; }
+    .col-count { font-size:11px; background:var(--surface2); color:var(--text-sub); padding:1px 8px; border-radius:10px; }
+    .col.todo .col-title::before   { content:''; width:8px; height:8px; border-radius:50%; background:var(--text-sub); display:inline-block; }
+    .col.inprog .col-title::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--accent); display:inline-block; box-shadow:0 0 8px var(--accent); }
+    .col.review .col-title::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--warning); display:inline-block; }
+    .col.done .col-title::before   { content:''; width:8px; height:8px; border-radius:50%; background:var(--success); display:inline-block; }
+
+    /* task card */
+    .task {
+      background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm);
+      padding:12px 14px; transition:all 0.2s; position:relative;
+    }
+    .task:hover { border-color:var(--accent); box-shadow:0 4px 16px rgba(0,0,0,0.3); }
+    .task-header { display:flex; align-items:flex-start; justify-content:space-between; gap:6px; margin-bottom:8px; }
+    .task-title { font-size:13px; font-weight:600; line-height:1.4; flex:1; }
+    .edit-btn {
+      background:none; border:1px solid var(--border); border-radius:6px;
+      color:var(--text-sub); font-size:11px; padding:2px 8px; cursor:pointer;
+      flex-shrink:0; transition:all 0.2s; white-space:nowrap;
+    }
+    .edit-btn:hover { border-color:var(--accent); color:var(--accent-light); background:rgba(108,99,255,0.08); }
+    .task-meta { display:flex; align-items:center; justify-content:space-between; }
+    .task-assignee { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-sub); }
+    .avatar { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; flex-shrink:0; }
+    .av-a { background:#3b4cca; color:#fff; }
+    .av-b { background:#1e8a6e; color:#fff; }
+    .av-c { background:#7b2d8b; color:#fff; }
+    .av-d { background:#b34a00; color:#fff; }
+    .task-source { font-size:10px; margin-top:6px; color:var(--text-sub); }
+    .task-source.ai      { color:var(--accent-light); }
+    .task-source.meeting { color:var(--warning); }
+    .task-source.github  { color:var(--success); }
+
+    /* ── Sidebar (fixed) ── */
+    .sidebar {
+      width:var(--sidebar); background:var(--surface); border-left:1px solid var(--border);
+      display:flex; flex-direction:column;
+      position:fixed; top:var(--nav); right:0; bottom:0;
+      overflow:hidden; z-index:100;
+    }
+    .sidebar-tabs { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+    .stab { flex:1; padding:12px 0; text-align:center; font-size:12px; font-weight:600; color:var(--text-sub); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; }
+    .stab.active { color:var(--accent-light); border-bottom-color:var(--accent); }
+    .sidebar-body { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:14px; }
+
+    /* GitHub feed */
+    .feed-item { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; }
+    .feed-top { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+    .feed-icon { font-size:14px; }
+    .feed-author { font-size:12px; font-weight:600; }
+    .feed-time { font-size:10px; color:var(--text-sub); margin-left:auto; }
+    .feed-msg { font-size:12px; color:var(--text-sub); line-height:1.5; }
+    .feed-tag { display:inline-block; margin-top:6px; font-size:10px; padding:2px 8px; border-radius:10px; }
+    .feed-tag.merged { background:rgba(108,99,255,0.15); color:var(--accent-light); }
+    .feed-tag.commit { background:rgba(76,175,130,0.12); color:var(--success); }
+    .feed-tag.issue  { background:rgba(255,92,92,0.12); color:var(--danger); }
+
+    /* meeting */
+    .meeting-input-area { display:flex; flex-direction:column; gap:10px; }
+    .meeting-input-area label { font-size:12px; font-weight:600; color:var(--text-sub); }
+    textarea.meeting-ta {
+      background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm);
+      color:var(--text); font-size:13px; padding:10px 12px; outline:none; resize:vertical;
+      min-height:140px; font-family:inherit; line-height:1.6; transition:border-color 0.2s;
+    }
+    textarea.meeting-ta:focus { border-color:var(--accent); }
+    textarea.meeting-ta::placeholder { color:#4a4e6a; }
+    .meeting-submit {
+      background:var(--accent); border:none; border-radius:var(--radius-sm); color:#fff;
+      font-size:13px; font-weight:700; padding:10px; cursor:pointer; transition:all 0.2s;
+      display:flex; align-items:center; justify-content:center; gap:6px;
+    }
+    .meeting-submit:hover { background:var(--accent-light); }
+    .ai-banner {
+      background:rgba(108,99,255,0.08); border:1px solid rgba(108,99,255,0.2);
+      border-radius:var(--radius-sm); padding:10px 12px; font-size:12px; color:var(--accent-light);
+      display:flex; align-items:flex-start; gap:8px;
+    }
+    .past-meeting { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; border-left:3px solid var(--accent); }
+    .pm-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    .pm-date { font-size:11px; font-weight:700; color:var(--accent-light); }
+    .pm-count { font-size:10px; color:var(--text-sub); }
+    .pm-items { font-size:12px; color:var(--text-sub); line-height:1.7; }
+
+    /* ── Edit Modal ── */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
+      z-index:500; align-items:center; justify-content:center;
+      backdrop-filter:blur(4px);
+    }
+    .modal-overlay.open { display:flex; }
+    .modal {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      width:440px; max-width:90vw; padding:28px; display:flex; flex-direction:column; gap:20px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; }
+    .modal-title { font-size:15px; font-weight:700; }
+    .modal-close { background:none; border:none; color:var(--text-sub); font-size:20px; cursor:pointer; line-height:1; }
+    .modal-close:hover { color:var(--text); }
+    .modal-field { display:flex; flex-direction:column; gap:8px; }
+    .modal-field label { font-size:12px; font-weight:600; color:var(--text-sub); }
+    .modal-field input,
+    .modal-field textarea,
+    .modal-field select {
+      background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm);
+      color:var(--text); font-size:13px; padding:10px 12px; outline:none; font-family:inherit;
+      transition:border-color 0.2s;
+    }
+    .modal-field input:focus,
+    .modal-field textarea:focus,
+    .modal-field select:focus { border-color:var(--accent); }
+    .modal-field textarea { resize:vertical; min-height:80px; line-height:1.6; }
+    .modal-field select option { background:var(--surface2); }
+
+    /* status selector */
+    .status-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+    .status-chip {
+      background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm);
+      padding:8px 12px; font-size:12px; cursor:pointer; text-align:center;
+      transition:all 0.2s; color:var(--text-sub); display:flex; align-items:center; justify-content:center; gap:6px;
+    }
+    .status-chip:hover { border-color:var(--accent); color:var(--text); }
+    .status-chip.selected { border-color:var(--accent); background:rgba(108,99,255,0.15); color:var(--accent-light); font-weight:600; }
+    .status-chip.sel-todo     { border-color:var(--text-sub); background:rgba(139,143,168,0.1); color:var(--text-sub); }
+    .status-chip.sel-inprog   { border-color:var(--accent); background:rgba(108,99,255,0.15); color:var(--accent-light); }
+    .status-chip.sel-review   { border-color:var(--warning); background:rgba(245,166,35,0.12); color:var(--warning); }
+    .status-chip.sel-done     { border-color:var(--success); background:rgba(76,175,130,0.12); color:var(--success); }
+
+    .modal-actions { display:flex; gap:10px; margin-top:4px; }
+    .btn-save {
+      flex:1; background:var(--accent); border:none; border-radius:var(--radius-sm);
+      color:#fff; font-size:13px; font-weight:700; padding:10px; cursor:pointer; transition:all 0.2s;
+    }
+    .btn-save:hover { background:var(--accent-light); }
+    .btn-cancel {
+      background:none; border:1px solid var(--border); border-radius:var(--radius-sm);
+      color:var(--text-sub); font-size:13px; padding:10px 20px; cursor:pointer; transition:all 0.2s;
+    }
+    .btn-cancel:hover { border-color:var(--danger); color:var(--danger); }
+
+    /* assignee selector */
+    .assignee-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+    .assignee-chip {
+      background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm);
+      padding:8px 12px; font-size:12px; cursor:pointer; transition:all 0.2s;
+      display:flex; align-items:center; gap:8px; color:var(--text-sub);
+    }
+    .assignee-chip:hover { border-color:var(--accent); color:var(--text); }
+    .assignee-chip.selected { border-color:var(--accent); background:rgba(108,99,255,0.15); color:var(--accent-light); }
+
+    @media(max-width:1200px){
+      .kanban { grid-template-columns:repeat(2,1fr); }
+      .member-grid { grid-template-columns:repeat(2,1fr); }
+    }
+    @media(max-width:800px){
+      main { margin-right:0; }
+      .sidebar { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Topnav ── -->
+<nav>
+  <div class="logo"><div class="dot"></div> Project Tracker</div>
+  <div class="nav-proj">프로젝트 <span>AI 기반 프로젝트 매니징 시스템</span></div>
+  <div class="nav-right">
+    <div class="sync-pill"><div class="sync-dot"></div> GitHub 동기화 중 · 2분 전</div>
+    <button class="nav-btn">⚙ 설정</button>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- ── Main ── -->
+  <main>
+
+    <!-- Sprint -->
+    <div class="sprint-bar">
+      <div class="sprint-info">
+        <h3>🏃 Sprint 2</h3>
+        <p>2025.05.12 – 05.25 · 13일 남음</p>
+      </div>
+      <div class="sprint-progress">
+        <div class="prog-label"><span>전체 진척도</span><span>42%</span></div>
+        <div class="prog-track"><div class="prog-fill"></div></div>
+      </div>
+      <div class="sprint-stats">
+        <div class="stat done"><div class="val">8</div><div class="lbl">Done</div></div>
+        <div class="stat prog"><div class="val">5</div><div class="lbl">In Progress</div></div>
+        <div class="stat todo"><div class="val">6</div><div class="lbl">To Do</div></div>
+      </div>
+    </div>
+
+    <!-- Team -->
+    <div class="section-header">
+      <div class="section-title">팀원 현황 <span class="badge">AI 역할 분석</span></div>
+    </div>
+    <div class="member-grid">
+      <div class="member-card">
+        <div class="mc-top">
+          <div class="mc-avatar av-a">A</div>
+          <div class="mc-info"><h4>Alice</h4><p>Frontend</p></div>
+        </div>
+        <div class="mc-summary">UI/UX 구현 중심. React 컴포넌트 설계 및 상태관리 담당. 발표·PPT 역량으로 스프린트 리뷰 진행.</div>
+      </div>
+      <div class="member-card">
+        <div class="mc-top">
+          <div class="mc-avatar av-b">B</div>
+          <div class="mc-info"><h4>Bob</h4><p>Backend</p></div>
+        </div>
+        <div class="mc-summary">FastAPI 서버 설계 및 Firestore 연동 담당. Python 숙련도 높음. 문서 작성 역량으로 API 명세 작성.</div>
+      </div>
+      <div class="member-card">
+        <div class="mc-top">
+          <div class="mc-avatar av-c">C</div>
+          <div class="mc-info"><h4>Carol</h4><p>AI / ML</p></div>
+        </div>
+        <div class="mc-summary">Upstage Solar API 연동 및 프롬프트 엔지니어링 담당. 데이터 분석 역량으로 워크플로우 로직 설계.</div>
+      </div>
+      <div class="member-card">
+        <div class="mc-top">
+          <div class="mc-avatar av-d">D</div>
+          <div class="mc-info"><h4>Dave</h4><p>DevOps</p></div>
+        </div>
+        <div class="mc-summary">GitHub Webhook 및 배포 파이프라인 담당. Docker·CI/CD 경험 보유. 인프라 전반 관리.</div>
+      </div>
+    </div>
+
+    <!-- Kanban -->
+    <div class="section-header">
+      <div class="section-title">워크플로우 <span class="badge">GitHub 자동 반영</span></div>
+      <button class="small-btn">+ 태스크 추가</button>
+    </div>
+    <div class="kanban">
+
+      <!-- To Do -->
+      <div class="col todo">
+        <div class="col-header"><div class="col-title">To Do</div><div class="col-count">3</div></div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">Firestore 데이터 모델 설계</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-b">B</div>Bob</div>
+            <span style="font-size:10px;color:var(--text-sub);">~4h</span>
+          </div>
+          <div class="task-source ai">✦ AI 배정</div>
+        </div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">회의록 파싱 엔드포인트 구현</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-c">C</div>Carol</div>
+            <span style="font-size:10px;color:var(--text-sub);">~6h</span>
+          </div>
+          <div class="task-source ai">✦ AI 배정</div>
+        </div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">GitHub Webhook 핸들러 작성</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-d">D</div>Dave</div>
+            <span style="font-size:10px;color:var(--text-sub);">~3h</span>
+          </div>
+          <div class="task-source meeting">📝 회의록 추출</div>
+        </div>
+      </div>
+
+      <!-- In Progress -->
+      <div class="col inprog">
+        <div class="col-header"><div class="col-title">In Progress</div><div class="col-count">3</div></div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">칸반 보드 UI 컴포넌트 구현</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-a">A</div>Alice</div>
+            <span style="font-size:10px;color:var(--text-sub);">~8h</span>
+          </div>
+          <div class="task-source ai">✦ AI 배정</div>
+        </div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">Solar API 프롬프트 엔지니어링</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-c">C</div>Carol</div>
+            <span style="font-size:10px;color:var(--text-sub);">~5h</span>
+          </div>
+          <div class="task-source ai">✦ AI 배정</div>
+        </div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">Docker Compose 환경 구성</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-d">D</div>Dave</div>
+            <span style="font-size:10px;color:var(--text-sub);">~2h</span>
+          </div>
+          <div class="task-source github">⬡ GitHub 이슈</div>
+        </div>
+      </div>
+
+      <!-- Review -->
+      <div class="col review">
+        <div class="col-header"><div class="col-title">Review</div><div class="col-count">2</div></div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">Google OAuth 로그인 구현</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-a">A</div>Alice</div>
+            <span style="font-size:10px;color:var(--text-sub);">~3h</span>
+          </div>
+          <div class="task-source github">⬡ PR #12 오픈</div>
+        </div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">FastAPI 기본 라우터 설계</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-b">B</div>Bob</div>
+            <span style="font-size:10px;color:var(--text-sub);">~4h</span>
+          </div>
+          <div class="task-source github">⬡ PR #10 오픈</div>
+        </div>
+      </div>
+
+      <!-- Done -->
+      <div class="col done">
+        <div class="col-header"><div class="col-title">Done</div><div class="col-count">4</div></div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">프로젝트 초기 세팅 & 개발환경 구축</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-d">D</div>Dave</div>
+            <span style="font-size:10px;color:var(--text-sub);">완료</span>
+          </div>
+          <div class="task-source github">⬡ PR #3 머지</div>
+        </div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">Figma 와이어프레임 제작</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-a">A</div>Alice</div>
+            <span style="font-size:10px;color:var(--text-sub);">완료</span>
+          </div>
+          <div class="task-source ai">✦ AI 배정</div>
+        </div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">Firebase 프로젝트 생성 및 연동</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-b">B</div>Bob</div>
+            <span style="font-size:10px;color:var(--text-sub);">완료</span>
+          </div>
+          <div class="task-source github">⬡ PR #7 머지</div>
+        </div>
+        <div class="task">
+          <div class="task-header">
+            <div class="task-title">요구사항 명세서 작성</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee"><div class="avatar av-c">C</div>Carol</div>
+            <span style="font-size:10px;color:var(--text-sub);">완료</span>
+          </div>
+          <div class="task-source meeting">📝 회의록 추출</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-tabs">
+      <div class="stab active" onclick="switchTab('meeting',this)">📝 회의록</div>
+      <div class="stab" onclick="switchTab('github',this)">⬡ GitHub</div>
+    </div>
+
+    <div class="sidebar-body" id="tab-meeting">
+      <div class="ai-banner"><span>✦</span><span>회의록을 입력하면 AI가 액션 아이템을 추출해 워크플로우에 자동 반영합니다.</span></div>
+      <div class="meeting-input-area">
+        <label>오늘 회의 내용</label>
+        <input type="date" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:8px 12px;font-size:13px;outline:none;font-family:inherit;"/>
+        <textarea class="meeting-ta" placeholder="회의 내용을 자유롭게 붙여넣어 주세요.&#10;&#10;예)&#10;- 로그인 UI 피드백 반영 필요&#10;- Carol이 Solar 프롬프트 수정 담당&#10;- 다음주 월요일까지 PR 리뷰 완료 목표"></textarea>
+        <button class="meeting-submit">✦ AI 분석 후 워크플로우 반영</button>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--text-sub);">이전 회의록</div>
+      <div class="past-meeting">
+        <div class="pm-top"><div class="pm-date">2025.05.10</div><div class="pm-count">액션 아이템 3개</div></div>
+        <div class="pm-items">✓ GitHub Webhook 핸들러 → Dave<br>✓ 회의록 파싱 엔드포인트 → Carol<br>✓ 요구사항 명세서 작성 → Carol</div>
+      </div>
+      <div class="past-meeting">
+        <div class="pm-top"><div class="pm-date">2025.05.05</div><div class="pm-count">액션 아이템 2개</div></div>
+        <div class="pm-items">✓ Figma 와이어프레임 → Alice<br>✓ Firebase 초기 설정 → Bob</div>
+      </div>
+    </div>
+
+    <div class="sidebar-body" id="tab-github" style="display:none;">
+      <div class="ai-banner"><span>⬡</span><span>GitHub 이벤트 감지 시 AI가 태스크 상태를 자동 업데이트합니다.</span></div>
+      <div class="feed-item">
+        <div class="feed-top"><div class="feed-icon">🔀</div><div class="feed-author">Bob</div><div class="feed-time">18분 전</div></div>
+        <div class="feed-msg">PR #10 머지 — FastAPI 기본 라우터 설계 완료</div>
+        <span class="feed-tag merged">PR Merged → Done 자동 이동</span>
+      </div>
+      <div class="feed-item">
+        <div class="feed-top"><div class="feed-icon">📌</div><div class="feed-author">Dave</div><div class="feed-time">1시간 전</div></div>
+        <div class="feed-msg">이슈 #15 생성 — "Redis 캐시 레이어 추가 검토"</div>
+        <span class="feed-tag issue">Issue → To Do 태스크 추가됨</span>
+      </div>
+      <div class="feed-item">
+        <div class="feed-top"><div class="feed-icon">💾</div><div class="feed-author">Alice</div><div class="feed-time">2시간 전</div></div>
+        <div class="feed-msg">feat: implement drag-and-drop kanban board</div>
+        <span class="feed-tag commit">Commit → 진척도 반영</span>
+      </div>
+      <div class="feed-item">
+        <div class="feed-top"><div class="feed-icon">🔀</div><div class="feed-author">Alice</div><div class="feed-time">5시간 전</div></div>
+        <div class="feed-msg">PR #12 오픈 — Google OAuth 로그인 구현</div>
+        <span class="feed-tag merged">PR Open → Review 자동 이동</span>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- ── Edit Modal ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">태스크 수정</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+
+    <!-- 태스크 제목 -->
+    <div class="modal-field">
+      <label>태스크 제목</label>
+      <input type="text" id="modalTitle" />
+    </div>
+
+    <!-- 세부사항 -->
+    <div class="modal-field">
+      <label>세부사항 / 설명</label>
+      <textarea id="modalDesc" rows="3" placeholder="구현 방향, 참고사항, 완료 조건 등을 입력하세요."></textarea>
+    </div>
+
+    <!-- 담당자 -->
+    <div class="modal-field">
+      <label>담당자 변경</label>
+      <div class="assignee-grid">
+        <div class="assignee-chip" onclick="selectAssignee(this,'A')"><div class="avatar av-a">A</div>Alice (Frontend)</div>
+        <div class="assignee-chip" onclick="selectAssignee(this,'B')"><div class="avatar av-b">B</div>Bob (Backend)</div>
+        <div class="assignee-chip" onclick="selectAssignee(this,'C')"><div class="avatar av-c">C</div>Carol (AI/ML)</div>
+        <div class="assignee-chip" onclick="selectAssignee(this,'D')"><div class="avatar av-d">D</div>Dave (DevOps)</div>
+      </div>
+    </div>
+
+    <!-- 상태 변경 -->
+    <div class="modal-field">
+      <label>상태 변경</label>
+      <div class="status-grid">
+        <div class="status-chip" data-status="todo"   onclick="selectStatus(this)">⬜ To Do</div>
+        <div class="status-chip" data-status="inprog" onclick="selectStatus(this)">🔵 In Progress</div>
+        <div class="status-chip" data-status="review" onclick="selectStatus(this)">🟡 Review</div>
+        <div class="status-chip" data-status="done"   onclick="selectStatus(this)">🟢 Done</div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-save" onclick="saveModal()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // tab switch
+  function switchTab(name, el) {
+    document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-meeting').style.display = name === 'meeting' ? 'flex' : 'none';
+    document.getElementById('tab-github').style.display  = name === 'github'  ? 'flex' : 'none';
+  }
+
+  // modal
+  let currentTask = null;
+
+  function openModal(btn) {
+    currentTask = btn.closest('.task');
+    const title = currentTask.querySelector('.task-title').textContent;
+    document.getElementById('modalTitle').value = title;
+    document.getElementById('modalDesc').value = '';
+
+    // reset chips
+    document.querySelectorAll('.assignee-chip').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.status-chip').forEach(c => {
+      c.classList.remove('selected','sel-todo','sel-inprog','sel-review','sel-done');
+    });
+
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    currentTask = null;
+  }
+
+  function closeOnOverlay(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  function selectAssignee(el, key) {
+    document.querySelectorAll('.assignee-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectStatus(el) {
+    document.querySelectorAll('.status-chip').forEach(c => {
+      c.classList.remove('selected','sel-todo','sel-inprog','sel-review','sel-done');
+    });
+    const s = el.dataset.status;
+    el.classList.add('selected', 'sel-' + s);
+  }
+
+  function saveModal() {
+    if (!currentTask) return;
+
+    // 제목 업데이트
+    const newTitle = document.getElementById('modalTitle').value.trim();
+    if (newTitle) currentTask.querySelector('.task-title').textContent = newTitle;
+
+    // 담당자 업데이트
+    const selAssignee = document.querySelector('.assignee-chip.selected');
+    if (selAssignee) {
+      const av = selAssignee.querySelector('.avatar');
+      const name = selAssignee.textContent.trim().split(' ')[0];
+      const cls = av.className;
+      const assigneeEl = currentTask.querySelector('.task-assignee');
+      assigneeEl.innerHTML = `<div class="avatar ${cls}">${av.textContent}</div>${name}`;
+    }
+
+    // 상태 업데이트 (컬럼 이동)
+    const selStatus = document.querySelector('.status-chip.selected');
+    if (selStatus) {
+      const statusMap = { todo:'todo', inprog:'inprog', review:'review', done:'done' };
+      const colClass = statusMap[selStatus.dataset.status];
+      const targetCol = document.querySelector(`.col.${colClass}`);
+      if (targetCol && !targetCol.contains(currentTask)) {
+        targetCol.appendChild(currentTask);
+        // update counts
+        document.querySelectorAll('.col').forEach(col => {
+          col.querySelector('.col-count').textContent = col.querySelectorAll('.task').length;
+        });
+      }
+    }
+
+    closeModal();
+  }
+</script>
+</body>
+</html>
