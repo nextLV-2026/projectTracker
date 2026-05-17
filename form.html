@@ -214,7 +214,7 @@
         </div>
         <div class="field">
           <label>개인 GitHub 링크</label>
-          <input type="url" placeholder="https://github.com/username" />
+          <input type="url" class="member-github-url" placeholder="https://github.com/username" />
           <div class="tip" style="margin-top:8px;"><span class="ti">🔍</span>개인 GitHub를 연결하면 AI가 실제 커밋 이력과 주요 사용 언어를 분석해 역할 적합도를 평가합니다.</div>
         </div>
         <div class="field">
@@ -250,7 +250,7 @@
         </div>
         <div class="field">
           <label>개인 GitHub 링크</label>
-          <input type="url" placeholder="https://github.com/username" />
+          <input type="url" class="member-github-url" placeholder="https://github.com/username" />
           <div class="tip" style="margin-top:8px;"><span class="ti">🔍</span>개인 GitHub를 연결하면 AI가 실제 커밋 이력과 주요 사용 언어를 분석해 역할 적합도를 평가합니다.</div>
         </div>
         <div class="field">
@@ -344,7 +344,7 @@
       </div>
       <div class="field">
         <label>개인 GitHub 링크</label>
-        <input type="url" placeholder="https://github.com/username" />
+        <input type="url" class="member-github-url" placeholder="https://github.com/username" />
         <div class="tip" style="margin-top:8px;"><span class="ti">🔍</span>개인 GitHub를 연결하면 AI가 커밋 이력을 분석해 역할 적합도를 평가합니다.</div>
       </div>
       <div class="field">
@@ -366,6 +366,72 @@
       </div>`;
     document.getElementById('memberList').appendChild(card);
   });
+
+  // =================================================================
+  // 🚀 파이썬 분석기로 데이터 전달 및 분석 요청
+  // =================================================================
+  
+  // 기존 Member 1, Member 2 의 HTML 코드 내 개인 GitHub input 태그에 
+  // class="member-github-url" 속성을 추가해 주시면 수집에 누락이 생기지 않습니다!
+  document.querySelectorAll('.member-card input[type="url"]').forEach(input => {
+    if(!input.id) input.classList.add('member-github-url');
+  });
+
+  document.getElementById('projectForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); // 기본 폼 제출(페이지 리프레시) 막기
+
+    // 1. 화면에 있는 모든 팀원의 깃허브 URL 수집하기
+    const urlInputs = document.querySelectorAll('.member-github-url');
+    const urls = [];
+    
+    urlInputs.forEach(input => {
+      const urlValue = input.value.trim();
+      if(urlValue) {
+        urls.push(urlValue);
+      }
+    });
+
+    if(urls.length === 0) {
+      alert('분석할 팀원의 GitHub 링크를 최소 한 개 이상 입력해주세요!');
+      return;
+    }
+
+    // 전송 전 버튼UI 변경
+    const submitBtn = document.querySelector('.btn-submit');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '⚡ AI가 팀원 깃허브 분석 중... (수 분 소요될 수 있음)';
+
+    try {
+      // 2. 파이썬 웹 서버로 POST 요청 보내기
+      const response = await fetch('http://localhost:5000/api/analyze-members', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ member_github_urls: urls })
+      });
+
+      const result = await response.json();
+
+      if(result.status === 'success') {
+        alert(result.message);
+        // 3. 파일 생성이 완수되면 메인 대시보드 화면(dashboard.html)으로 이동시키기
+        window.location.href = 'dashboard.html';
+      } else {
+        alert('분석 실패: ' + result.message);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+
+    } catch (error) {
+      console.error('서버 통신 오류:', error);
+      alert('백엔드 분석 서버가 켜져 있는지 확인해 주세요! (포트 5000)');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
+  });
+
 </script>
 </body>
 </html>
