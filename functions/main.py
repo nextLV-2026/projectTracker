@@ -2,10 +2,12 @@ from firebase_admin import firestore
 from firebase_functions import https_fn
 from firebase_functions.options import set_global_options
 from firebase_admin import initialize_app
+from upstage_parser import process_and_save_document
 
 set_global_options(max_instances=10)
 
 initialize_app()
+
 @https_fn.on_request()
 def process_github_data(req: https_fn.Request) -> https_fn.Response:
     # GitHub API 수집 JSON 정규화 로직
@@ -49,6 +51,19 @@ def process_github_data(req: https_fn.Request) -> https_fn.Response:
     db.collection("team_github_metrics").document(username).set(refined_data)
     
     return https_fn.Response(f"{username}님의 GitHub 데이터 정제 및 DB 저장 완료")
+
+@https_fn.on_request()
+def parse_document_api(req: https_fn.Request) -> https_fn.Response:
+    # 프론트에서 보낸 파일 받기
+    uploaded_file = req.files.get('document')
+    
+    # 분리해둔 모듈 함수 실행
+    result = process_and_save_document(uploaded_file)
+    
+    if result["status"] == "error":
+        return https_fn.Response(result["message"], status=400)
+    
+    return https_fn.Response(result["message"])
 
 
 @https_fn.on_request()
