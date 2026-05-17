@@ -1,0 +1,652 @@
+{
+  "name": "ProjectTracker - GitHub 분석 기반 역할분담 + 진행 피드백",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "project-tracker/init",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {
+          "allowedOrigins": "*",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "content-type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "init-webhook",
+      "name": "Init Project Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        -300
+      ],
+      "webhookId": "project-tracker-init"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const item = $input.first();\nconst body = item.json.body || item.json;\n\nfunction cleanString(value) {\n  return String(value || '').trim();\n}\n\nfunction normalizeMember(member, index) {\n  const techStack = Array.isArray(member.tech_stack)\n    ? member.tech_stack\n    : Array.isArray(member.techStack)\n      ? member.techStack\n      : cleanString(member.tech_stack || member.techStack).split(',').map(v => v.trim()).filter(Boolean);\n\n  const softSkills = Array.isArray(member.soft_skills)\n    ? member.soft_skills\n    : Array.isArray(member.softSkills)\n      ? member.softSkills\n      : cleanString(member.soft_skills || member.softSkills).split(',').map(v => v.trim()).filter(Boolean);\n\n  return {\n    member_id: member.member_id || `member_${index + 1}`,\n    name: cleanString(member.name) || `팀원 ${index + 1}`,\n    preferred_role: cleanString(member.preferred_role || member.role),\n    github_url: cleanString(member.github_url || member.githubUrl),\n    tech_stack: techStack,\n    soft_skills: softSkills,\n    notes: cleanString(member.notes),\n  };\n}\n\nconst members = Array.isArray(body.members) ? body.members.map(normalizeMember) : [];\n\nconst projectTopic = cleanString(body.project_topic || body.projectTopic || body.title);\nconst projectRepoUrl = cleanString(body.project_repo_url || body.projectRepoUrl || body.repo_url || body.repoUrl);\nconst deadline = cleanString(body.deadline || body.due_date || body.dueDate);\nconst extraContext = cleanString(body.extra_context || body.extraContext || body.context);\n\nif (!projectTopic) {\n  return [{ json: { ok: false, error: 'project_topic이 비어 있습니다.' } }];\n}\nif (!projectRepoUrl) {\n  return [{ json: { ok: false, error: 'project_repo_url이 비어 있습니다.' } }];\n}\nif (!members.length) {\n  return [{ json: { ok: false, error: 'members 배열이 비어 있습니다.' } }];\n}\nconst missingGithub = members.filter(m => !m.github_url);\nif (missingGithub.length) {\n  return [{ json: { ok: false, error: `GitHub 링크가 없는 팀원이 있습니다: ${missingGithub.map(m => m.name).join(', ')}` } }];\n}\n\nconst projectId = cleanString(body.project_id || body.projectId)\n  || projectTopic.toLowerCase()\n    .replace(/https?:\\/\\//g, '')\n    .replace(/[^a-z0-9가-힣]+/gi, '-')\n    .replace(/^-|-$/g, '')\n    .slice(0, 60)\n  || `project-${Date.now()}`;\n\nreturn [{\n  json: {\n    ok: true,\n    mode: 'init',\n    project: {\n      project_id: projectId,\n      project_topic: projectTopic,\n      deadline,\n      project_repo_url: projectRepoUrl,\n      extra_context: extraContext,\n      source: 'form.html',\n      created_at: new Date().toISOString(),\n    },\n    members,\n  }\n}];"
+      },
+      "id": "normalize-init",
+      "name": "Normalize Init Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -980,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "init-ok-cond",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "init-valid",
+      "name": "Init Payload Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -760,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const source = $input.first().json;\nreturn source.members.map(member => ({\n  json: {\n    project: source.project,\n    member,\n    analyzer_request: {\n      member,\n      github_url: member.github_url,\n      max_repos: 10,\n      include_readme: true,\n      include_file_tree: true,\n      include_contribution: true,\n    }\n  }\n}));"
+      },
+      "id": "member-items",
+      "name": "Build Member Analysis Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.GITHUB_PROFILE_ANALYZER_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $env.PROJECT_TRACKER_INTERNAL_TOKEN ? 'Bearer ' + $env.PROJECT_TRACKER_INTERNAL_TOKEN : '' }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.analyzer_request }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "analyze-member-github",
+      "name": "Analyze Member GitHub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -260,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const analyzedItems = $input.all().map(item => item.json);\nconst firstProject = analyzedItems[0]?.project || analyzedItems[0]?.input_project || {};\n\nconst memberAnalyses = analyzedItems.map((item, index) => {\n  const member = item.member || item.request?.member || item.input?.member || {};\n  const analysis = item.analysis || item.github_analysis || item;\n  return {\n    member_id: member.member_id || `member_${index + 1}`,\n    name: member.name || analysis?.user?.username || `팀원 ${index + 1}`,\n    preferred_role: member.preferred_role || '',\n    declared_tech_stack: member.tech_stack || [],\n    soft_skills: member.soft_skills || [],\n    github_url: member.github_url || analysis?.input?.github_profile_url || '',\n    github_analysis: analysis,\n  };\n});\n\nreturn [{\n  json: {\n    project: firstProject,\n    member_analyses: memberAnalyses,\n  }\n}];"
+      },
+      "id": "aggregate-analyses",
+      "name": "Aggregate Member Analyses",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const data = $input.first().json;\nconst project = data.project;\nconst memberAnalyses = data.member_analyses;\n\nconst compactMembers = memberAnalyses.map(m => {\n  const ga = m.github_analysis || {};\n  return {\n    name: m.name,\n    preferred_role: m.preferred_role,\n    declared_tech_stack: m.declared_tech_stack,\n    soft_skills: m.soft_skills,\n    github_url: m.github_url,\n    github_summary: ga.summary || {},\n    github_user: ga.user || {},\n    repositories: (ga.repositories || []).slice(0, 10).map(repo => ({\n      repo_name: repo.repo_name,\n      html_url: repo.html_url,\n      description: repo.description,\n      updated_at: repo.updated_at,\n      pushed_at: repo.pushed_at,\n      main_language: repo.main_language,\n      languages: repo.languages,\n      framework_library_analysis: repo.framework_library_analysis,\n      contribution: repo.contribution ? {\n        commit_count_sampled: repo.contribution.commit_count_sampled,\n        total_additions_sampled: repo.contribution.total_additions_sampled,\n        total_deletions_sampled: repo.contribution.total_deletions_sampled,\n        top_touched_files: repo.contribution.top_touched_files,\n        recent_commits: repo.contribution.recent_commits,\n      } : {}\n    }))\n  };\n});\n\nconst prompt = `\n너는 대학생 팀 프로젝트의 역할 분담을 설계하는 PM/테크리드야.\n아래 프로젝트 정보, 팀원 자기기입 정보, GitHub 최근 10개 레포 분석 JSON을 함께 보고 역할을 배정해줘.\n\n[중요 원칙]\n1. GitHub 분석 결과만으로 단정하지 말고, 본인이 입력한 희망 역할/기술스택/소프트스킬과 함께 판단해.\n2. 역할은 Frontend, Backend, AI/ML, Data, DevOps, PM/기획, 문서/발표, QA 중에서 필요하면 복수 배정해.\n3. 각 팀원별로 \"왜 이 역할이 맞는지\"를 GitHub 근거와 입력 근거로 설명해.\n4. 프로젝트 레포 ${project.project_repo_url} 기준으로 초기 태스크를 To Do / In Progress / Review / Done 칸반 형태로 제안해.\n5. 이후 진행 보고서와 GitHub 레포 분석 결과가 들어오면 계속 업데이트할 수 있도록 Markdown 문서 구조를 만들어줘.\n6. 응답은 반드시 JSON만 반환해. Markdown 설명을 바깥에 붙이지 마.\n\n[출력 JSON 형식]\n{\n  \"project_summary\": \"...\",\n  \"role_assignments\": [\n    {\n      \"member_name\": \"...\",\n      \"primary_role\": \"...\",\n      \"secondary_roles\": [\"...\"],\n      \"reason\": \"...\",\n      \"evidence\": {\n        \"declared\": [\"...\"],\n        \"github\": [\"...\"]\n      },\n      \"recommended_tasks\": [\"...\"],\n      \"risk_or_gap\": \"...\"\n    }\n  ],\n  \"kanban\": {\n    \"todo\": [{\"title\":\"...\", \"assignee\":\"...\", \"reason\":\"...\", \"estimated_effort\":\"...\"}],\n    \"in_progress\": [],\n    \"review\": [],\n    \"done\": []\n  },\n  \"workflow_policy\": {\n    \"progress_report_format\": \"...\",\n    \"github_sync_policy\": \"...\",\n    \"feedback_loop_rule\": \"...\"\n  },\n  \"markdown_flow\": \"# ProjectTracker Flow\\\\n...\"\n}\n\n[프로젝트 정보]\n${JSON.stringify(project, null, 2)}\n\n[팀원 GitHub 분석]\n${JSON.stringify(compactMembers, null, 2)}\n`;\n\nreturn [{\n  json: {\n    project,\n    member_analyses: memberAnalyses,\n    prompt,\n  }\n}];"
+      },
+      "id": "prepare-role-prompt",
+      "name": "Prepare Role Assignment Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.upstage.ai/v1/solar/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.UPSTAGE_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: $env.UPSTAGE_CHAT_MODEL || 'solar-pro', temperature: 0.2, messages: [{ role: 'user', content: $json.prompt }] } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "upstage-role",
+      "name": "Upstage Role Assignment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const original = $('Prepare Role Assignment Prompt').first().json;\nconst response = $input.first().json;\n\nfunction getContent(res) {\n  return res?.choices?.[0]?.message?.content || '';\n}\n\nfunction stripFence(text) {\n  text = String(text || '').trim();\n  if (text.startsWith('```json')) text = text.slice(7).trim();\n  else if (text.startsWith('```')) text = text.slice(3).trim();\n  if (text.endsWith('```')) text = text.slice(0, -3).trim();\n  return text;\n}\n\nlet parsed;\nconst content = getContent(response);\ntry {\n  parsed = JSON.parse(stripFence(content));\n} catch (error) {\n  parsed = {\n    project_summary: 'AI 응답 JSON 파싱 실패',\n    raw_content: content,\n    parse_error: String(error),\n    markdown_flow: `# ProjectTracker Flow\\n\\n## Raw Upstage Response\\n\\n${content}`\n  };\n}\n\nconst markdown = parsed.markdown_flow || `# ProjectTracker Flow\n\n## 프로젝트\n${original.project.project_topic}\n\n## 역할 분담 결과\n\\`\\`\\`json\n${JSON.stringify(parsed, null, 2)}\n\\`\\`\\`\n`;\n\nreturn [{\n  json: {\n    ok: true,\n    mode: 'init',\n    project: original.project,\n    role_assignment: parsed,\n    member_analyses: original.member_analyses,\n    markdown_flow: markdown,\n  }\n}];"
+      },
+      "id": "parse-role-response",
+      "name": "Parse Role Assignment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\nconst data = $input.first().json;\nconst baseDir = process.env.PROJECT_TRACKER_FLOW_DIR || '/data/projectTracker/flows';\nfs.mkdirSync(baseDir, { recursive: true });\n\nconst projectId = data.project.project_id;\nconst flowPath = path.join(baseDir, `${projectId}.md`);\nconst analysisPath = path.join(baseDir, `${projectId}.analysis.json`);\n\nfs.writeFileSync(flowPath, data.markdown_flow, 'utf8');\nfs.writeFileSync(analysisPath, JSON.stringify({\n  project: data.project,\n  role_assignment: data.role_assignment,\n  member_analyses: data.member_analyses,\n}, null, 2), 'utf8');\n\nreturn [{\n  json: {\n    ok: true,\n    message: '초기 역할 분담과 flow.md 저장 완료',\n    project: data.project,\n    role_assignment: data.role_assignment,\n    saved_files: {\n      flow_md: flowPath,\n      analysis_json: analysisPath,\n    }\n  }\n}];"
+      },
+      "id": "save-initial-md",
+      "name": "Save Initial Flow Markdown",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return [{ json: $input.first().json }];"
+      },
+      "id": "return-init-error",
+      "name": "Return Init Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "project-tracker/progress",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {
+          "allowedOrigins": "*",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "content-type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "progress-webhook",
+      "name": "Progress Feedback Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        280
+      ],
+      "webhookId": "project-tracker-progress"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\nfunction clean(value) { return String(value || '').trim(); }\n\nconst projectId = clean(body.project_id || body.projectId);\nconst projectRepoUrl = clean(body.project_repo_url || body.projectRepoUrl || body.repo_url || body.repoUrl);\nconst progressReport = clean(body.progress_report || body.progressReport || body.report);\nconst meetingNotes = clean(body.meeting_notes || body.meetingNotes);\n\nif (!projectId) return [{ json: { ok: false, error: 'project_id가 필요합니다.' } }];\nif (!projectRepoUrl) return [{ json: { ok: false, error: 'project_repo_url이 필요합니다.' } }];\nif (!progressReport && !meetingNotes) return [{ json: { ok: false, error: '진행 보고서 또는 회의록이 필요합니다.' } }];\n\nreturn [{\n  json: {\n    ok: true,\n    mode: 'progress',\n    project_id: projectId,\n    project_repo_url: projectRepoUrl,\n    progress_report: progressReport,\n    meeting_notes: meetingNotes,\n    created_at: new Date().toISOString(),\n  }\n}];"
+      },
+      "id": "normalize-progress",
+      "name": "Normalize Progress Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -980,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "progress-ok-cond",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "progress-valid",
+      "name": "Progress Payload Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -760,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.PROJECT_REPO_ANALYZER_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $env.PROJECT_TRACKER_INTERNAL_TOKEN ? 'Bearer ' + $env.PROJECT_TRACKER_INTERNAL_TOKEN : '' }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { project_id: $json.project_id, project_repo_url: $json.project_repo_url, progress_report: $json.progress_report, meeting_notes: $json.meeting_notes, max_commits: 30, include_issues: true, include_pull_requests: true } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "analyze-project-repo",
+      "name": "Analyze Project Repo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -520,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\nconst progress = $('Normalize Progress Payload').first().json;\nconst repoAnalysis = $input.first().json;\n\nconst baseDir = process.env.PROJECT_TRACKER_FLOW_DIR || '/data/projectTracker/flows';\nconst flowPath = path.join(baseDir, `${progress.project_id}.md`);\n\nlet previousFlow = '';\ntry {\n  previousFlow = fs.readFileSync(flowPath, 'utf8');\n} catch (error) {\n  previousFlow = '# ProjectTracker Flow\\n\\n이전 flow.md를 찾지 못했습니다. 이번 진행 보고서를 기준으로 새 흐름을 만듭니다.\\n';\n}\n\nreturn [{\n  json: {\n    progress,\n    repo_analysis: repoAnalysis,\n    flow_path: flowPath,\n    previous_flow: previousFlow,\n  }\n}];"
+      },
+      "id": "read-flow-md",
+      "name": "Read Existing Flow Markdown",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const data = $input.first().json;\nconst progress = data.progress;\n\nconst prompt = `\n너는 ProjectTracker의 진행 관리 AI야.\n아래 기존 flow.md, 새 진행 보고서, 프로젝트 GitHub 레포 분석 결과를 비교해서 다음 액션을 제안해줘.\n\n[해야 할 일]\n1. 진행 보고서와 GitHub 활동이 일치하는지 확인해.\n2. 완료된 일, 지연된 일, 새로 생긴 일을 구분해.\n3. 칸반 상태 변경안을 제안해.\n4. 팀원별 다음 할 일을 재배정해.\n5. 기존 flow.md 뒤에 이어붙일 Markdown 업데이트 섹션을 작성해.\n6. 응답은 반드시 JSON만 반환해.\n\n[출력 JSON 형식]\n{\n  \"progress_summary\": \"...\",\n  \"consistency_check\": {\n    \"matched\": [\"...\"],\n    \"mismatch_or_risk\": [\"...\"]\n  },\n  \"kanban_updates\": [\n    {\"task\":\"...\", \"from\":\"...\", \"to\":\"...\", \"reason\":\"...\"}\n  ],\n  \"next_actions\": [\n    {\"assignee\":\"...\", \"task\":\"...\", \"priority\":\"high|medium|low\", \"reason\":\"...\"}\n  ],\n  \"feedback\": \"...\",\n  \"markdown_append\": \"## Progress Update - ...\"\n}\n\n[기존 flow.md]\n${data.previous_flow}\n\n[새 진행 보고서]\n${progress.progress_report}\n\n[회의록]\n${progress.meeting_notes}\n\n[프로젝트 GitHub 레포 분석]\n${JSON.stringify(data.repo_analysis, null, 2)}\n`;\n\nreturn [{ json: { ...data, prompt } }];"
+      },
+      "id": "prepare-progress-prompt",
+      "name": "Prepare Progress Feedback Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.upstage.ai/v1/solar/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.UPSTAGE_API_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: $env.UPSTAGE_CHAT_MODEL || 'solar-pro', temperature: 0.2, messages: [{ role: 'user', content: $json.prompt }] } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "upstage-progress",
+      "name": "Upstage Progress Feedback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const fs = require('fs');\nconst base = $('Prepare Progress Feedback Prompt').first().json;\nconst response = $input.first().json;\n\nfunction getContent(res) {\n  return res?.choices?.[0]?.message?.content || '';\n}\nfunction stripFence(text) {\n  text = String(text || '').trim();\n  if (text.startsWith('```json')) text = text.slice(7).trim();\n  else if (text.startsWith('```')) text = text.slice(3).trim();\n  if (text.endsWith('```')) text = text.slice(0, -3).trim();\n  return text;\n}\n\nlet parsed;\nconst content = getContent(response);\ntry {\n  parsed = JSON.parse(stripFence(content));\n} catch (error) {\n  parsed = {\n    progress_summary: 'AI 응답 JSON 파싱 실패',\n    raw_content: content,\n    parse_error: String(error),\n    markdown_append: `\\n\\n## Progress Update - ${new Date().toISOString()}\\n\\n${content}\\n`\n  };\n}\n\nconst append = parsed.markdown_append || `\\n\\n## Progress Update - ${new Date().toISOString()}\\n\\n\\`\\`\\`json\\n${JSON.stringify(parsed, null, 2)}\\n\\`\\`\\`\\n`;\nfs.appendFileSync(base.flow_path, `\\n\\n${append}`, 'utf8');\n\nreturn [{\n  json: {\n    ok: true,\n    message: '진행 피드백 생성 및 flow.md 업데이트 완료',\n    project_id: base.progress.project_id,\n    feedback: parsed,\n    saved_files: {\n      flow_md: base.flow_path\n    }\n  }\n}];"
+      },
+      "id": "append-flow-md",
+      "name": "Append Flow Markdown",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return [{ json: $input.first().json }];"
+      },
+      "id": "return-progress-error",
+      "name": "Return Progress Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        400
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Init Project Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Init Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Init Payload": {
+      "main": [
+        [
+          {
+            "node": "Init Payload Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Init Payload Valid?": {
+      "main": [
+        [
+          {
+            "node": "Build Member Analysis Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Init Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Member Analysis Items": {
+      "main": [
+        [
+          {
+            "node": "Analyze Member GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Member GitHub": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Member Analyses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Member Analyses": {
+      "main": [
+        [
+          {
+            "node": "Prepare Role Assignment Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Role Assignment Prompt": {
+      "main": [
+        [
+          {
+            "node": "Upstage Role Assignment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upstage Role Assignment": {
+      "main": [
+        [
+          {
+            "node": "Parse Role Assignment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Role Assignment": {
+      "main": [
+        [
+          {
+            "node": "Save Initial Flow Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Progress Feedback Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Progress Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Progress Payload": {
+      "main": [
+        [
+          {
+            "node": "Progress Payload Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Progress Payload Valid?": {
+      "main": [
+        [
+          {
+            "node": "Analyze Project Repo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Progress Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Project Repo": {
+      "main": [
+        [
+          {
+            "node": "Read Existing Flow Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Existing Flow Markdown": {
+      "main": [
+        [
+          {
+            "node": "Prepare Progress Feedback Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Progress Feedback Prompt": {
+      "main": [
+        [
+          {
+            "node": "Upstage Progress Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upstage Progress Feedback": {
+      "main": [
+        [
+          {
+            "node": "Append Flow Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2abed4f7-f50a-4a5c-8404-8f2e36688141",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "project-tracker-nextlv-github-upstage-flow",
+  "tags": []
+}
