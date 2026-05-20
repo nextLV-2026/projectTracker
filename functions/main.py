@@ -164,4 +164,4 @@ def github_webhook(req: https_fn.Request) -> https_fn.Response:
             status=200
         )
 
-    return https_fn.Response("Webhook 실시간 수신 완료!")
+    return https_fn.Response("Webhook 실시간 수신 완료")
