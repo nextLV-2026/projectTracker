@@ -23,6 +23,7 @@ def process_and_save_document(uploaded_file):
     db = firestore.client()
     doc_ref = db.collection("meeting_minutes_logs").document()
     doc_ref.set({
+        "project_id": "project_01",
         "filename": uploaded_file.filename,
         "markdown_content": markdown_text,
         "timestamp": firestore.SERVER_TIMESTAMP
