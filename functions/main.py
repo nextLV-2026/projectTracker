@@ -165,3 +165,51 @@ def github_webhook(req: https_fn.Request) -> https_fn.Response:
         )
 
     return https_fn.Response("Webhook 실시간 수신 완료")
+
+@https_fn.on_request()
+def create_ai_workflow(req: https_fn.Request) -> https_fn.Response:
+    db = firestore.client()
+    
+    # Firestore에서 데이터 수집
+    # 프론트엔드에서 project_id를 전달받음 (예: ?project_id=project_01)
+    project_id = req.args.get("project_id")
+    if not project_id:
+        return https_fn.Response("project_id 파라미터가 필요합니다.", status=400)
+
+    try:
+        # 특정 project_id에 해당하는 프로젝트 정보 가져오기
+        project_doc = db.collection("project_metadata").document(project_id).get()
+        project_info = project_doc.to_dict() if project_doc.exists else {}
+
+        # 팀원 깃허브 데이터 (*특정 프로젝트에 속한 팀원들만 필터링 필요할 수 있음)
+        team_docs = db.collection("team_github_metrics").stream()
+        team_metrics = {doc.id: doc.to_dict() for doc in team_docs}
+
+        # 해당 프로젝트의 모든 회의록을 시간순으로 가져오기
+        # 회의록 데이터에 project_id 필드가 있어야 함
+        meeting_docs = db.collection("meeting_minutes_logs")\
+                         .where("project_id", "==", project_id)\
+                         .order_by("timestamp", direction=firestore.Query.ASCENDING)\
+                         .stream()
+        
+        # 모든 회의록 내용을 하나의 긴 텍스트로 병합
+        all_meeting_minutes = "\n\n---\n\n".join([doc.to_dict().get("markdown_content", "") for doc in meeting_docs])
+        
+    except Exception as e:
+        return https_fn.Response(f"DB 데이터 수집 에러: {str(e)}", status=500)
+
+    # Solar LLM 호출
+    ai_workflow_result = generate_project_workflow(project_info, team_metrics, meeting_minutes)
+
+    if not ai_workflow_result:
+        return https_fn.Response("AI 워크플로우 생성 실패", status=500)
+
+    # 생성된 워크플로우 결과를 DB에 저장
+    doc_ref = db.collection("ai_workflow_context").document()
+    doc_ref.set({
+        "project_id": "project_01",
+        "workflow_markdown": ai_workflow_result,
+        "timestamp": firestore.SERVER_TIMESTAMP
+    })
+
+    return https_fn.Response("AI 워크플로우 생성 및 DB 저장 성공", status=200)
