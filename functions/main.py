@@ -199,7 +199,7 @@ def create_ai_workflow(req: https_fn.Request) -> https_fn.Response:
         return https_fn.Response(f"DB 데이터 수집 에러: {str(e)}", status=500)
 
     # Solar LLM 호출
-    ai_workflow_result = generate_project_workflow(project_info, team_metrics, meeting_minutes)
+    ai_workflow_result = generate_project_workflow(project_info, team_metrics, all_meeting_minutes)
 
     if not ai_workflow_result:
         return https_fn.Response("AI 워크플로우 생성 실패", status=500)

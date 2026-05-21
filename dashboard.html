@@ -593,7 +593,7 @@
 </div>
 
 <script>
-  // tab switch
+  // ── 1. 탭 전환 로직 ──
   function switchTab(name, el) {
     document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
@@ -601,7 +601,7 @@
     document.getElementById('tab-github').style.display  = name === 'github'  ? 'flex' : 'none';
   }
 
-  // modal
+  // ── 2. 모달 제어 로직 ──
   let currentTask = null;
 
   function openModal(btn) {
@@ -610,7 +610,7 @@
     document.getElementById('modalTitle').value = title;
     document.getElementById('modalDesc').value = '';
 
-    // reset chips
+    // 칩 초기화
     document.querySelectorAll('.assignee-chip').forEach(c => c.classList.remove('selected'));
     document.querySelectorAll('.status-chip').forEach(c => {
       c.classList.remove('selected','sel-todo','sel-inprog','sel-review','sel-done');
@@ -666,14 +666,102 @@
       const targetCol = document.querySelector(`.col.${colClass}`);
       if (targetCol && !targetCol.contains(currentTask)) {
         targetCol.appendChild(currentTask);
-        // update counts
-        document.querySelectorAll('.col').forEach(col => {
-          col.querySelector('.col-count').textContent = col.querySelectorAll('.task').length;
-        });
       }
     }
 
+    updateAllCounts();
     closeModal();
+  }
+
+  // 모든 컬럼의 태스크 개수 뱃지 최신화
+  function updateAllCounts() {
+    document.querySelectorAll('.col').forEach(col => {
+      const countEl = col.querySelector('.col-count');
+      if (countEl) {
+        countEl.textContent = col.querySelectorAll('.task').length;
+      }
+    });
+  }
+
+  // ── 3. [N8N 맞춤형] 데이터 로드 및 렌더링 로직 ──
+  document.addEventListener('DOMContentLoaded', () => {
+    // form.html이 저장해 둔 n8n 통신 결과물 가져오기
+    const savedData = localStorage.getItem('aiWorkflow');
+    if (savedData) {
+      try {
+        const roleAssignment = JSON.parse(savedData);
+        renderAITasks(roleAssignment);
+      } catch (e) {
+        console.error("AI 데이터 파싱 오류:", e);
+      }
+    }
+  });
+
+  function renderAITasks(roleAssignment) {
+    // n8n 데이터 구조 내부의 kanban 객체 검증
+    if (!roleAssignment || !roleAssignment.kanban) return;
+    const kanban = roleAssignment.kanban;
+
+    // 1. 기존 화면에 고정되어 있던 하드코딩 더미 태스크 싹 비우기
+    document.querySelectorAll('.col').forEach(col => {
+      col.querySelectorAll('.task').forEach(t => t.remove());
+    });
+
+    // 2. n8n 상태 키값을 현재 퍼블리싱된 CSS 클래스명에 매핑
+    const statusMap = {
+      todo: 'todo',
+      in_progress: 'inprog', // 백엔드의 in_progress를 화면의 inprog 컬럼으로 매핑
+      review: 'review',
+      done: 'done'
+    };
+
+    // 3. 팀원 이름에 따라 아바타 색상을 랜덤 분배하기 위한 설정
+    const avatarColors = ['av-a', 'av-b', 'av-c', 'av-d'];
+    let colorCounter = 0;
+    const nameColorMap = {};
+
+    // 4. kanban 객체의 각 키(todo, in_progress, review, done)를 순회하며 그리기
+    Object.keys(kanban).forEach(statusKey => {
+      const frontendClass = statusMap[statusKey];
+      const column = document.querySelector(`.col.${frontendClass}`);
+      
+      if (!column || !Array.isArray(kanban[statusKey])) return;
+
+      kanban[statusKey].forEach(task => {
+        const rawName = task.assignee || '미지정';
+        // 이름의 첫 글자를 아바타 기호로 사용 (예: '홍길동' -> '홍' / 'Alice' -> 'A')
+        const firstChar = rawName.charAt(0).toUpperCase(); 
+
+        // 고유 이름마다 고정된 아바타 색상 클래스 배정
+        if (!nameColorMap[rawName]) {
+          nameColorMap[rawName] = avatarColors[colorCounter % avatarColors.length];
+          colorCounter++;
+        }
+        const avClass = nameColorMap[rawName];
+        const timeLimit = task.estimated_effort || ''; // n8n 필드명 반영
+
+        // 태스크 DOM 엘리먼트 생성 및 삽입
+        const taskEl = document.createElement('div');
+        taskEl.className = 'task';
+        taskEl.innerHTML = `
+          <div class="task-header">
+            <div class="task-title">${task.title}</div>
+            <button class="edit-btn" onclick="openModal(this)">✏ 수정</button>
+          </div>
+          <div class="task-meta">
+            <div class="task-assignee">
+              <div class="avatar ${avClass}">${firstChar}</div>${rawName}
+            </div>
+            <span style="font-size:10px;color:var(--text-sub);">${timeLimit}</span>
+          </div>
+          <div class="task-source ai">✦ AI 배정</div>
+        `;
+        column.appendChild(taskEl);
+      });
+    });
+
+    // 5. 배치 완료 후 상단 숫자 카운트 일괄 업데이트
+    updateAllCounts();
   }
 </script>
 </body>
