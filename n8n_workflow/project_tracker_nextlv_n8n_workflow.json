@@ -177,7 +177,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { model: $env.UPSTAGE_CHAT_MODEL || 'solar-pro', temperature: 0.2, messages: [{ role: 'user', content: $json.prompt }] } }}",
+        "jsonBody": "={{ { model: $env.UPSTAGE_CHAT_MODEL || 'solar-pro', temperature: 0.2, messages: [{ role: 'system', content: '너는 대학생 IT 팀 프로젝트를 지원하는 프로젝트 매니저이자 테크리드다. 사용자의 입력과 GitHub 분석 결과를 바탕으로 역할 분담, 초기 업무, 리스크를 제안한다. 반드시 JSON만 반환하고, 설명 문장이나 Markdown 코드를 JSON 바깥에 붙이지 않는다. 팀원 평가는 GitHub 정보만으로 단정하지 말고, 사용자가 입력한 희망 역할, 기술 스택, 소프트 스킬을 함께 고려한다.' }, { role: 'user', content: $json.prompt }] } }}",
         "options": {
           "response": {
             "response": {
@@ -399,7 +399,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { model: $env.UPSTAGE_CHAT_MODEL || 'solar-pro', temperature: 0.2, messages: [{ role: 'user', content: $json.prompt }] } }}",
+        "jsonBody": "={{ { model: $env.UPSTAGE_CHAT_MODEL || 'solar-pro', temperature: 0.2, messages: [{ role: 'system', content: '너는 ProjectTracker의 진행 관리 AI다. 기존 flow.md, 새 진행 보고서, 회의록, GitHub 레포 분석 결과를 비교해 프로젝트 상태를 갱신한다. 완료된 일, 지연된 일, 새로 생긴 일, 다음 액션을 구분해서 제안한다. 반드시 JSON으로 반환하되, markdown_append 필드 안에 Markdown과 Mermaid를 넣는다. 근거가 부족한 내용은 확정하지 말고 risk 또는 mismatch로 표시한다.' }, { role: 'user', content: $json.prompt }] } }}",
         "options": {
           "response": {
             "response": {
