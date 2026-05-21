@@ -1,5 +1,5 @@
 {
-  "name": "ProjectTracker - GitHub 분석 기반 역할분담 + 진행 피드백",
+  "name": "ProjectTracker",
   "nodes": [
     {
       "parameters": {
@@ -444,6 +444,20 @@
         -520,
         400
       ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const data = $input.first().json;\n\n// data.role_assignment에는 Upstage가 반환한 전체 JSON이 들어있음\nconst aiResult = data.role_assignment || {};\n\nfunction toRoleAssignmentItem(item) {\n  const name =\n    item.name ||\n    item.member_name ||\n    item.memberName ||\n    item.assignee ||\n    '';\n\n  const role =\n    item.role ||\n    item.primary_role ||\n    item.primaryRole ||\n    '';\n\n  const taskValue =\n    item.task ||\n    item.recommended_task ||\n    item.recommendedTasks ||\n    item.recommended_tasks ||\n    '';\n\n  const task = Array.isArray(taskValue)\n    ? taskValue.join(', ')\n    : String(taskValue || '');\n\n  return { name, role, task };\n}\n\nconst roleSource = Array.isArray(aiResult.role_assignment)\n  ? aiResult.role_assignment\n  : Array.isArray(aiResult.role_assignments)\n    ? aiResult.role_assignments\n    : [];\n\nconst roleAssignment = roleSource.map(toRoleAssignmentItem);\n\n// 팀원별 역할 분담 정보는 role_assignment에만 남기고,\n// 나머지 응답에서는 role_assignment / role_assignments / member_analyses를 제거함\nconst {\n  role_assignment,\n  role_assignments,\n  member_analyses,\n  ...aiResultWithoutMembers\n} = aiResult;\n\nreturn [{\n  json: {\n    ok: data.ok,\n    mode: data.mode,\n\n    // 1번 갈래: 팀원 정보만 반환\n    role_assignment: roleAssignment,\n\n    // 2번 갈래: 팀원 정보를 제외한 나머지 결과 반환\n    project_result: {\n      message: data.message,\n      project: data.project,\n      ...aiResultWithoutMembers,\n      markdown_flow: data.markdown_flow,\n      saved_files: data.saved_files,\n    }\n  }\n}];"
+      },
+      "id": "split-init-response",
+      "name": "Split Init Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        -420
+      ]
     }
   ],
   "pinData": {},
@@ -632,6 +646,17 @@
         [
           {
             "node": "Append Flow Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Initial Flow Markdown": {
+      "main": [
+        [
+          {
+            "node": "Split Init Response",
             "type": "main",
             "index": 0
           }
