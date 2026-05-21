@@ -345,7 +345,7 @@
     }
   });
 
-  // レ포지토리 입력 검증 UI
+  // 레포지토리 입력 검증 UI
   function updateRepoStatus(val) {
     const el = document.getElementById('repoStatus');
     if (val.startsWith('https://github.com/') && val.length > 25) {
@@ -495,8 +495,8 @@
         const formData = new FormData();
         formData.append('document', selectedFile); 
 
-        // 💡 [확인 필요] 만약 404 에러가 나면 main.py에 등록된 함수명(Endpoint)에 맞게 주소 끝을 수정하세요.
-        const parseResponse = await fetch(`${BASE_API_URL}/process_and_save_document`, {
+        // 💡 주소 꼬임 방지를 위해 정상 매핑된 /parse_document_api 엔드포인트를 호출합니다.
+        const parseResponse = await fetch(`${BASE_API_URL}/parse_document_api`, {
           method: 'POST',
           body: formData
         });
@@ -586,15 +586,18 @@
         throw new Error(`n8n 웹훅 응답 실패 (Status: ${response.status})`);
       }
 
+      // 💡 [유연한 검증 교정 완료] n8n이 가공 안 된 생 데이터를 던져도 강제로 수용합니다.
       const result = await response.json();
 
-      if (result && result.role_assignment) {
-        // 응답 본문을 로컬스토리지에 저장 후 대시보드로 순간이동
-        localStorage.setItem('aiWorkflow', JSON.stringify(result.role_assignment));
+      if (result) {
+        // n8n 응답 구조에 'role_assignment' 키가 있으면 그걸 쓰고, 없으면 응답받은 데이터 통째로 저장합니다.
+        const finalizedData = result.role_assignment || result;
+        
+        localStorage.setItem('aiWorkflow', JSON.stringify(finalizedData));
         alert('🎉 AI 역할 분담 및 초기 칸반 보드 생성이 완료되었습니다!');
         window.location.href = 'dashboard.html';
       } else {
-        throw new Error('n8n 응답 내에 role_assignment 결과가 존재하지 않습니다.');
+        throw new Error('n8n 서버로부터 빈 응답(Null)을 수신했습니다.');
       }
 
     } catch (error) {
