@@ -25,21 +25,28 @@
     header h1 { font-size:28px; font-weight:700; letter-spacing:-0.5px; }
     header p { margin-top:8px; color:var(--text-sub); font-size:14px; line-height:1.6; }
 
+    /* steps 내비게이션 스타일 수정 및 추가 */
     .steps { width:100%; max-width:760px; display:flex; align-items:center; margin-bottom:32px; }
-    .step { display:flex; align-items:center; gap:10px; flex:1; }
+    .step { display:flex; align-items:center; gap:10px; flex:1; cursor: pointer; user-select: none; }
     .step-circle { width:32px; height:32px; border-radius:50%; background:var(--surface2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--text-sub); flex-shrink:0; transition:all 0.3s; }
-    .step.active .step-circle { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 0 16px rgba(108,99,255,0.5); }
-    .step-label { font-size:13px; color:var(--text-sub); font-weight:500; }
-    .step.active .step-label { color:var(--text); }
+    
+    /* 현재 입력 포커스 상태 (기본 정보로 시작) */
+    .step.active .step-circle { background:var(--surface2); border-color:var(--accent); color:var(--accent-light); box-shadow:0 0 12px rgba(108,99,255,0.2); }
+    .step.active .step-label { color:var(--text); font-weight: 600; }
+    
+    /* 필수 항목 만족 완료 시 초록색으로 변경 */
+    .step.completed .step-circle { background:var(--success); border-color:var(--success); color:#fff; box-shadow:0 0 16px rgba(76,175,130,0.4); }
+    .step.completed .step-label { color:var(--text); font-weight: 600; }
+
+    .step-label { font-size:13px; color:var(--text-sub); font-weight:500; transition: color 0.3s; }
     .step-line { flex:1; height:2px; background:var(--border); margin:0 8px; }
 
-    .card { width:100%; max-width:760px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:32px; margin-bottom:20px; }
+    .card { width:100%; max-width:760px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:32px; margin-bottom:20px; scroll-margin-top: 40px; }
     .card-header { display:flex; align-items:center; gap:12px; margin-bottom:28px; }
     .card-icon { width:36px; height:36px; border-radius:var(--radius-sm); background:rgba(108,99,255,0.15); display:flex; align-items:center; justify-content:center; font-size:18px; }
     .card-title { font-size:16px; font-weight:600; }
     .card-desc { font-size:12px; color:var(--text-sub); margin-top:2px; }
 
-    /* highlight card for repo */
     .card.highlight { border-color: rgba(108,99,255,0.5); background: linear-gradient(135deg, #1a1d27 0%, #1e1a35 100%); }
     .card.highlight .card-icon { background: rgba(108,99,255,0.3); }
 
@@ -60,7 +67,6 @@
     .row { display:grid; gap:16px; }
     .row.col2 { grid-template-columns:1fr 1fr; }
 
-    /* repo status badge */
     .repo-status { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:12px; color:var(--text-sub); }
     .repo-status .dot-live { width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 6px var(--success); animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
@@ -95,11 +101,12 @@
     .btn-add-member { width:100%; background:none; border:1px dashed var(--border); border-radius:var(--radius-sm); color:var(--text-sub); font-size:13px; padding:12px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:12px; }
     .btn-add-member:hover { border-color:var(--accent); color:var(--accent-light); background:rgba(108,99,255,0.05); }
 
-    .upload-zone { border:1px dashed var(--border); border-radius:var(--radius-sm); padding:24px; text-align:center; color:var(--text-sub); font-size:13px; cursor:pointer; transition:all 0.2s; }
-    .upload-zone:hover { border-color:var(--accent); background:rgba(108,99,255,0.04); }
+    .upload-zone { border:1px dashed var(--border); border-radius:var(--radius-sm); padding:24px; text-align:center; color:var(--text-sub); font-size:13px; cursor:pointer; transition:all 0.2s; position: relative; }
+    .upload-zone:hover, .upload-zone.dragover { border-color:var(--accent); background:rgba(108,99,255,0.05); }
     .upload-zone .icon { font-size:28px; margin-bottom:8px; }
     .upload-zone p { margin-top:4px; font-size:12px; }
     .upload-zone span { color:var(--accent-light); font-weight:600; }
+    .file-name-display { margin-top: 10px; color: var(--success); font-weight: 600; font-size: 13px; display: none; }
 
     .tip { background:rgba(108,99,255,0.08); border:1px solid rgba(108,99,255,0.2); border-radius:var(--radius-sm); padding:10px 14px; font-size:12px; color:var(--text-sub); display:flex; align-items:flex-start; gap:8px; margin-top:12px; }
     .tip .ti { flex-shrink:0; color:var(--accent-light); }
@@ -124,19 +131,18 @@
 </header>
 
 <div class="steps">
-  <div class="step active"><div class="step-circle">1</div><div class="step-label">기본 정보</div></div>
+  <div class="step active" data-target="card-basic"><div class="step-circle">1</div><div class="step-label">기본 정보</div></div>
   <div class="step-line"></div>
-  <div class="step active"><div class="step-circle">2</div><div class="step-label">GitHub 연결</div></div>
+  <div class="step" data-target="card-github"><div class="step-circle">2</div><div class="step-label">GitHub 연결</div></div>
   <div class="step-line"></div>
-  <div class="step active"><div class="step-circle">3</div><div class="step-label">팀원 구성</div></div>
+  <div class="step" data-target="card-team"><div class="step-circle">3</div><div class="step-label">팀원 구성</div></div>
   <div class="step-line"></div>
-  <div class="step"><div class="step-circle">4</div><div class="step-label">추가 컨텍스트</div></div>
+  <div class="step" data-target="card-context"><div class="step-circle">4</div><div class="step-label">추가 컨텍스트</div></div>
 </div>
 
 <form id="projectForm" autocomplete="off">
 
-  <!-- 1. 기본 정보 -->
-  <div class="card">
+  <div class="card" id="card-basic">
     <div class="card-header">
       <div class="card-icon">📋</div>
       <div>
@@ -146,16 +152,15 @@
     </div>
     <div class="field">
       <label>프로젝트 주제 <span class="req">*</span></label>
-      <input type="text" placeholder="예) AI 기반 프로젝트 매니징 시스템 개발" />
+      <input type="text" id="projectSubject" placeholder="예) AI 기반 프로젝트 매니징 시스템 개발" required />
     </div>
     <div class="field">
       <label>마감 기한 <span class="req">*</span></label>
-      <input type="date" style="max-width:260px;" />
+      <input type="date" id="projectDeadline" style="max-width:260px;" required />
     </div>
   </div>
 
-  <!-- 2. GitHub 레포지토리 연결 (핵심) -->
-  <div class="card highlight">
+  <div class="card highlight" id="card-github">
     <div class="card-header">
       <div class="card-icon">🔗</div>
       <div>
@@ -166,7 +171,7 @@
 
     <div class="field">
       <label>레포지토리 URL <span class="req">*</span></label>
-      <input type="url" id="repoUrl" placeholder="https://github.com/your-org/your-repo" oninput="updateRepoStatus(this.value)" />
+      <input type="url" id="repoUrl" placeholder="https://github.com/your-org/your-repo" oninput="updateRepoStatus(this.value)" required />
       <div class="repo-status" id="repoStatus">
         <div class="dot-idle"></div>
         <span>레포지토리 URL을 입력하면 연결 상태가 표시됩니다</span>
@@ -189,8 +194,7 @@
     </div>
   </div>
 
-  <!-- 3. 팀원 구성 -->
-  <div class="card">
+  <div class="card" id="card-team">
     <div class="card-header">
       <div class="card-icon">👥</div>
       <div>
@@ -200,52 +204,15 @@
     </div>
 
     <div class="member-list" id="memberList">
-      <!-- Member 1 -->
       <div class="member-card">
         <div class="member-card-header">
           <span class="member-num">팀원 #1</span>
-          <button type="button" class="btn-remove" onclick="this.closest('.member-card').remove()">✕ 삭제</button>
+          <button type="button" class="btn-remove" onclick="removeMemberCard(this)">✕ 삭제</button>
         </div>
         <div class="row col2">
-          <div class="field"><label>이름 <span class="req">*</span></label><input type="text" placeholder="홍길동" /></div>
+          <div class="field"><label>이름 <span class="req">*</span></label><input type="text" class="member-name" placeholder="홍길동" required /></div>
           <div class="field"><label>역할 <span class="req">*</span></label>
-            <select><option value="">역할 선택</option><option>Frontend</option><option>Backend</option><option>Fullstack</option><option>AI / ML</option><option>Designer</option><option>PM / 기획</option><option>DevOps</option></select>
-          </div>
-        </div>
-        <div class="field">
-          <label>개인 GitHub 링크</label>
-          <input type="url" class="member-github-url" placeholder="https://github.com/username" />
-          <div class="tip" style="margin-top:8px;"><span class="ti">🔍</span>개인 GitHub를 연결하면 AI가 실제 커밋 이력과 주요 사용 언어를 분석해 역할 적합도를 평가합니다.</div>
-        </div>
-        <div class="field">
-          <label>사용 언어 / 기술스택 <span class="req">*</span></label>
-          <div class="tag-wrap"><input class="tag-input" placeholder="입력 후 Enter" /></div>
-          <div class="tag-hint">예) Python, React, TypeScript — Enter로 추가</div>
-        </div>
-        <div class="field">
-          <label>기술 외 역량 (소프트 스킬)</label>
-          <div class="checkbox-group">
-            <label class="chip-check"><input type="checkbox"/><span>🎤 발표</span></label>
-            <label class="chip-check"><input type="checkbox"/><span>📝 문서 작성</span></label>
-            <label class="chip-check"><input type="checkbox"/><span>🖼 PPT 제작</span></label>
-            <label class="chip-check"><input type="checkbox"/><span>🎨 디자인</span></label>
-            <label class="chip-check"><input type="checkbox"/><span>🤝 팀 리딩</span></label>
-            <label class="chip-check"><input type="checkbox"/><span>🔍 리서치</span></label>
-            <label class="chip-check"><input type="checkbox"/><span>📊 데이터 분석</span></label>
-          </div>
-        </div>
-      </div>
-
-      <!-- Member 2 -->
-      <div class="member-card">
-        <div class="member-card-header">
-          <span class="member-num">팀원 #2</span>
-          <button type="button" class="btn-remove" onclick="this.closest('.member-card').remove()">✕ 삭제</button>
-        </div>
-        <div class="row col2">
-          <div class="field"><label>이름 <span class="req">*</span></label><input type="text" placeholder="홍길동" /></div>
-          <div class="field"><label>역할 <span class="req">*</span></label>
-            <select><option value="">역할 선택</option><option>Frontend</option><option>Backend</option><option>Fullstack</option><option>AI / ML</option><option>Designer</option><option>PM / 기획</option><option>DevOps</option></select>
+            <select class="member-role" required><option value="">역할 선택</option><option>Frontend</option><option>Backend</option><option>Fullstack</option><option>AI / ML</option><option>Designer</option><option>PM / 기획</option><option>DevOps</option></select>
           </div>
         </div>
         <div class="field">
@@ -276,8 +243,7 @@
     <button type="button" class="btn-add-member" id="addMember">＋ 팀원 추가</button>
   </div>
 
-  <!-- 4. 추가 컨텍스트 -->
-  <div class="card">
+  <div class="card" id="card-context">
     <div class="card-header">
       <div class="card-icon">📎</div>
       <div>
@@ -287,11 +253,17 @@
     </div>
     <div class="field">
       <label>문서 업로드</label>
-      <div class="upload-zone"><div class="icon">📄</div><div><span>클릭하여 파일 선택</span> 또는 드래그 앤 드롭</div><p>PDF, DOCX, TXT · 최대 10MB</p></div>
+      <input type="file" id="contextFileInput" accept=".pdf,.docx,.txt" style="display: none;" />
+      <div class="upload-zone" id="uploadZone">
+        <div class="icon">📄</div>
+        <div><span>클릭하여 파일 선택</span> 또는 드래그 앤 드롭</div>
+        <p>PDF, DOCX, TXT · 최대 10MB</p>
+        <div class="file-name-display" id="fileNameDisplay"></div>
+      </div>
     </div>
     <div class="field">
       <label>자유 입력 컨텍스트</label>
-      <textarea rows="4" placeholder="기획 의도, 특별히 고려해야 할 사항, 기술적 제약 등을 자유롭게 입력하세요."></textarea>
+      <textarea id="freeTextContext" rows="4" placeholder="기획 의도, 특별히 고려해야 할 사항, 기술적 제약 등을 자유롭게 입력하세요."></textarea>
     </div>
   </div>
 
@@ -300,8 +272,64 @@
 </form>
 
 <script>
-  let memberCount = 2;
+  // ── [자동화 UI 주소 설정] ──
+  const isLocalhost = Boolean(
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === '[::1]'
+  );
 
+  // 💡 분석 결과 파악된 실제 프로젝트 ID 반영 완료
+  const FIREBASE_PROJECT_ID = 'projecttracker-3554a'; 
+
+  const BASE_API_URL = isLocalhost
+    ? `http://127.0.0.1:5001/${FIREBASE_PROJECT_ID}/us-central1`
+    : `https://us-central1-${FIREBASE_PROJECT_ID}.cloudfunctions.net`;
+
+  const LOCAL_FLASK_URL = 'http://localhost:5000';
+  const N8N_WORKFLOW_URL = 'http://localhost:5678/webhook/project-tracker/init';
+
+  let selectedFile = null;
+  let memberCount = 1;
+
+  // 업로드 인터랙션 바인딩 스크립트 
+  const uploadZone = document.getElementById('uploadZone');
+  const contextFileInput = document.getElementById('contextFileInput');
+  const fileNameDisplay = document.getElementById('fileNameDisplay');
+
+  uploadZone.addEventListener('click', () => contextFileInput.click());
+
+  contextFileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      handleFileSelection(e.target.files[0]);
+    }
+  });
+
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+  });
+
+  uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('dragover');
+  });
+
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length > 0) {
+      handleFileSelection(e.dataTransfer.files[0]);
+    }
+  });
+
+  function handleFileSelection(file) {
+    selectedFile = file;
+    fileNameDisplay.innerText = `📎 선택된 파일: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+    fileNameDisplay.style.display = 'block';
+    updateStepProgress(); // 파일 업로드 시 4단계 체크 가동
+  }
+
+  // 태그 입력 핸들러
   document.addEventListener('keydown', function(e) {
     if (e.target.classList.contains('tag-input') && e.key === 'Enter') {
       e.preventDefault();
@@ -310,12 +338,14 @@
       const wrap = e.target.closest('.tag-wrap');
       const tag = document.createElement('div');
       tag.className = 'tag';
-      tag.innerHTML = val + '<button type="button" onclick="this.parentElement.remove()">×</button>';
+      tag.innerHTML = val + '<button type="button" onclick="this.parentElement.remove(); updateStepProgress();">×</button>';
       wrap.insertBefore(tag, e.target);
       e.target.value = '';
+      updateStepProgress(); // 태그 추가 시 진척도 갱신
     }
   });
 
+  // 레포지토리 입력 검증 UI
   function updateRepoStatus(val) {
     const el = document.getElementById('repoStatus');
     if (val.startsWith('https://github.com/') && val.length > 25) {
@@ -325,8 +355,16 @@
     } else {
       el.innerHTML = '<div class="dot-idle"></div><span>레포지토리 URL을 입력하면 연결 상태가 표시됩니다</span>';
     }
+    updateStepProgress(); // 입력 상태 실시간 반영
   }
 
+  // 팀원 삭제 전용 래퍼 함수 (진척도 갱신 동기화 목적)
+  function removeMemberCard(button) {
+    button.closest('.member-card').remove();
+    updateStepProgress();
+  }
+
+  // 팀원 추가 인터랙션
   document.getElementById('addMember').addEventListener('click', function() {
     memberCount++;
     const card = document.createElement('div');
@@ -334,12 +372,12 @@
     card.innerHTML = `
       <div class="member-card-header">
         <span class="member-num">팀원 #${memberCount}</span>
-        <button type="button" class="btn-remove" onclick="this.closest('.member-card').remove()">✕ 삭제</button>
+        <button type="button" class="btn-remove" onclick="removeMemberCard(this)">✕ 삭제</button>
       </div>
       <div class="row col2">
-        <div class="field"><label>이름 <span class="req">*</span></label><input type="text" placeholder="홍길동" /></div>
+        <div class="field"><label>이름 <span class="req">*</span></label><input type="text" class="member-name" placeholder="홍길동" required /></div>
         <div class="field"><label>역할 <span class="req">*</span></label>
-          <select><option value="">역할 선택</option><option>Frontend</option><option>Backend</option><option>Fullstack</option><option>AI / ML</option><option>Designer</option><option>PM / 기획</option><option>DevOps</option></select>
+          <select class="member-role" required><option value="">역할 선택</option><option>Frontend</option><option>Backend</option><option>Fullstack</option><option>AI / ML</option><option>Designer</option><option>PM / 기획</option><option>DevOps</option></select>
         </div>
       </div>
       <div class="field">
@@ -365,73 +403,210 @@
         </div>
       </div>`;
     document.getElementById('memberList').appendChild(card);
+    updateStepProgress();
   });
 
-  // =================================================================
-  // 🚀 파이썬 분석기로 데이터 전달 및 분석 요청
-  // =================================================================
-  
-  // 기존 Member 1, Member 2 의 HTML 코드 내 개인 GitHub input 태그에 
-  // class="member-github-url" 속성을 추가해 주시면 수집에 누락이 생기지 않습니다!
-  document.querySelectorAll('.member-card input[type="url"]').forEach(input => {
-    if(!input.id) input.classList.add('member-github-url');
+  // 상단 라인 클릭 시 해당 위치 스크롤 이동 연동
+  document.querySelectorAll('.step').forEach(step => {
+    step.addEventListener('click', function() {
+      const targetId = this.getAttribute('data-target');
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        this.classList.add('active');
+      }
+    });
   });
 
-  document.getElementById('projectForm').addEventListener('submit', async function(e) {
-    e.preventDefault(); // 기본 폼 제출(페이지 리프레시) 막기
+  // 필수항목 실시간 체크 및 색상 변경 (completed) 로직
+  function updateStepProgress() {
+    const steps = document.querySelectorAll('.step');
 
-    // 1. 화면에 있는 모든 팀원의 깃허브 URL 수집하기
-    const urlInputs = document.querySelectorAll('.member-github-url');
-    const urls = [];
+    // [1단계 기본정보 검증]
+    const subject = document.getElementById('projectSubject')?.value.trim();
+    const deadline = document.getElementById('projectDeadline')?.value;
+    if (subject && deadline) {
+      steps[0].classList.add('completed');
+    } else {
+      steps[0].classList.remove('completed');
+    }
+
+    // [2단계 GitHub 레포지토리 검증]
+    const repoUrl = document.getElementById('repoUrl')?.value.trim();
+    if (repoUrl && repoUrl.startsWith('https://github.com/') && repoUrl.length > 25) {
+      steps[1].classList.add('completed');
+    } else {
+      steps[1].classList.remove('completed');
+    }
+
+    // [3단계 팀원 구성 검증]
+    const memberCards = document.querySelectorAll('.member-card');
+    let isTeamValid = memberCards.length > 0;
     
-    urlInputs.forEach(input => {
-      const urlValue = input.value.trim();
-      if(urlValue) {
-        urls.push(urlValue);
+    memberCards.forEach(card => {
+      const name = card.querySelector('.member-name')?.value.trim();
+      const role = card.querySelector('.member-role')?.value;
+      const hasTags = card.querySelectorAll('.tag').length > 0;
+      
+      if (!name || !role || !hasTags) {
+        isTeamValid = false;
       }
     });
 
-    if(urls.length === 0) {
-      alert('분석할 팀원의 GitHub 링크를 최소 한 개 이상 입력해주세요!');
-      return;
+    if (isTeamValid) {
+      steps[2].classList.add('completed');
+    } else {
+      steps[2].classList.remove('completed');
     }
 
-    // 전송 전 버튼UI 변경
+    // [4단계 추가 컨텍스트 검증]
+    const freeText = document.getElementById('freeTextContext')?.value.trim();
+    if (selectedFile || freeText) {
+      steps[3].classList.add('completed');
+    } else {
+      steps[3].classList.remove('completed');
+    }
+  }
+
+  // 실시간 입력 감지 이벤트 바인딩
+  document.getElementById('projectForm').addEventListener('input', updateStepProgress);
+  document.getElementById('projectForm').addEventListener('change', updateStepProgress);
+  
+  // 초기 렌더링 시점에 상태 계산 호출 한번 실행
+  updateStepProgress();
+
+  // =======================================================
+  // 폼 통합 제출 처리 (Upstage_parser -> n8n AI 파이프라인 연동)
+  // =======================================================
+  document.getElementById('projectForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
     const submitBtn = document.querySelector('.btn-submit');
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '⚡ AI가 팀원 깃허브 분석 중... (수 분 소요될 수 있음)';
 
-    try {
-      // 2. 파이썬 웹 서버로 POST 요청 보내기
-      const response = await fetch('http://localhost:5000/api/analyze-members', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ member_github_urls: urls })
-      });
+    // ────────────────────────────────────────────────────────
+    // [교정 단계 1] Upstage Document AI 파싱 실행 (upstage_parser.py 호출)
+    // ────────────────────────────────────────────────────────
+    if (selectedFile) {
+      submitBtn.innerHTML = '⚡ 1/2 단계: Upstage AI로 문서 파싱 및 Firestore 적재 중...';
+      try {
+        const formData = new FormData();
+        formData.append('document', selectedFile); 
 
-      const result = await response.json();
+        // 💡 주소 꼬임 방지를 위해 정상 매핑된 /parse_document_api 엔드포인트를 호출합니다.
+        const parseResponse = await fetch(`${BASE_API_URL}/parse_document_api`, {
+          method: 'POST',
+          body: formData
+        });
 
-      if(result.status === 'success') {
-        alert(result.message);
-        // 3. 파일 생성이 완수되면 메인 대시보드 화면(dashboard.html)으로 이동시키기
-        window.location.href = 'dashboard.html';
-      } else {
-        alert('분석 실패: ' + result.message);
+        if (!parseResponse.ok) {
+          throw new Error(`문서 파싱 API 서버 통신 실패 (Status: ${parseResponse.status})`);
+        }
+        
+        const parseResult = await parseResponse.json();
+        if (parseResult.status === 'error') {
+          throw new Error(`Upstage 파서 에러: ${parseResult.message}`);
+        }
+        console.log('Upstage Parser를 통해 Firestore 저장 완료:', parseResult);
+
+      } catch (error) {
+        console.error('문서 파싱 단계 에러:', error);
+        alert('문서 분석 중 에러가 발생했습니다: ' + error.message);
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
+        return;
+      }
+    }
+
+    // ────────────────────────────────────────────────────────
+    // [교정 단계 2] 종합 데이터 빌드 및 n8n 워크플로우 가동
+    // ────────────────────────────────────────────────────────
+    submitBtn.innerHTML = '⚡ 2/2 단계: Solar LLM 기반 역할 분담 알고리즘 연산 중...';
+
+    const projectTopic = document.getElementById('projectSubject')?.value.trim() || '';
+    const projectRepoUrl = document.getElementById('repoUrl')?.value.trim() || '';
+    const deadline = document.getElementById('projectDeadline')?.value || '';
+    const freeText = document.getElementById('freeTextContext')?.value.trim() || '';
+    const extraContext = selectedFile ? `[첨부파일명: ${selectedFile.name}] ${freeText}` : freeText;
+
+    // 동적 팀원 데이터 추출
+    const members = [];
+    const memberCards = document.querySelectorAll('.member-card');
+
+    memberCards.forEach((card, index) => {
+      const name = card.querySelector('.member-name')?.value.trim() || `팀원 ${index + 1}`;
+      const role = card.querySelector('.member-role')?.value || '';
+      const githubUrl = card.querySelector('.member-github-url')?.value.trim() || '';
+      
+      const techStack = [];
+      card.querySelectorAll('.tag').forEach(tagEl => {
+        if (tagEl.firstChild) {
+          const text = tagEl.firstChild.textContent.trim();
+          if (text) techStack.push(text);
+        }
+      });
+
+      const softSkills = [];
+      card.querySelectorAll('.checkbox-group input[type="checkbox"]:checked').forEach(chk => {
+        const spanText = chk.nextElementSibling?.textContent.trim();
+        if (spanText) softSkills.push(spanText);
+      });
+
+      members.push({
+        member_id: `member_${index + 1}`,
+        name: name,
+        preferred_role: role,
+        github_url: githubUrl,
+        tech_stack: techStack,
+        soft_skills: softSkills,
+        notes: ''
+      });
+    });
+
+    // n8n 규격 전송 페이로드 구성
+    const payload = {
+      project_topic: projectTopic,
+      project_repo_url: projectRepoUrl,
+      deadline: deadline,
+      extra_context: extraContext,
+      members: members
+    };
+
+    try {
+      // n8n Webhook 연동 호출
+      const response = await fetch(N8N_WORKFLOW_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`n8n 웹훅 응답 실패 (Status: ${response.status})`);
+      }
+
+      // 💡 [유연한 검증 교정 완료] n8n이 가공 안 된 생 데이터를 던져도 강제로 수용합니다.
+      const result = await response.json();
+
+      if (result) {
+        // n8n 응답 구조에 'role_assignment' 키가 있으면 그걸 쓰고, 없으면 응답받은 데이터 통째로 저장합니다.
+        const finalizedData = result.role_assignment || result;
+        
+        localStorage.setItem('aiWorkflow', JSON.stringify(finalizedData));
+        alert('🎉 AI 역할 분담 및 초기 칸반 보드 생성이 완료되었습니다!');
+        window.location.href = 'dashboard.html';
+      } else {
+        throw new Error('n8n 서버로부터 빈 응답(Null)을 수신했습니다.');
       }
 
     } catch (error) {
-      console.error('서버 통신 오류:', error);
-      alert('백엔드 분석 서버가 켜져 있는지 확인해 주세요! (포트 5000)');
+      console.error('n8n 파이프라인 연동 에러:', error);
+      alert('최종 분석 오류 발생: ' + error.message);
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalText;
     }
   });
-
 </script>
 </body>
 </html>

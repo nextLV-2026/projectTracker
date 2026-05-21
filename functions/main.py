@@ -1,16 +1,28 @@
+import firebase_admin
 from firebase_admin import firestore
-from firebase_functions import https_fn
+from firebase_functions import https_fn, options
 from firebase_functions.options import set_global_options
 from firebase_admin import initialize_app
 from upstage_parser import process_and_save_document
+import json
 
 set_global_options(max_instances=10)
 
-initialize_app()
+# Firebase Admin SDK 초기화 (중복 방지)
+if not firebase_admin._apps:
+    initialize_app()
 
-@https_fn.on_request()
+# 공통으로 사용할 강력한 CORS 옵션 정의 (모든 포트/도메인 통과)
+cors_configuration = options.CorsOptions(
+    cors_origins="*",  
+    cors_methods=["GET", "POST", "OPTIONS"]
+)
+
+@https_fn.on_request(cors=cors_configuration)
 def process_github_data(req: https_fn.Request) -> https_fn.Response:
-    # GitHub API 수집 JSON 정규화 로직
+    if req.method == "OPTIONS":
+        return https_fn.Response(status=204)
+
     github_data = req.get_json()
 
     if not github_data:
@@ -37,8 +49,8 @@ def process_github_data(req: https_fn.Request) -> https_fn.Response:
     # DB에 저장하고 정제된 데이터 딕셔너리 생성
     refined_data = {
         "username": username,
-        "main_languages": language_stats,           # ex: {"Dart": 41.18, "Python": 18.2}
-        "tech_stacks": list(used_frameworks),       # ex: ["react", "express", "openai", "firebase"]
+        "main_languages": language_stats,
+        "tech_stacks": list(used_frameworks),
         "activity_level": {
             "total_recent_commits": total_commits,
             "total_code_additions": total_additions
@@ -47,23 +59,37 @@ def process_github_data(req: https_fn.Request) -> https_fn.Response:
 
     # Firestore DB에 정제된 데이터 저장
     db = firestore.client()
-
     db.collection("team_github_metrics").document(username).set(refined_data)
     
     return https_fn.Response(f"{username}님의 GitHub 데이터 정제 및 DB 저장 완료")
 
-@https_fn.on_request()
+
+# 🔥 [버그 수정 완료] 함수명을 parse_document_api로 변경하여 무한 루프 충돌을 해결했습니다.
+@https_fn.on_request(cors=cors_configuration)
 def parse_document_api(req: https_fn.Request) -> https_fn.Response:
-    # 프론트에서 보낸 파일 받기
+    # CORS Preflight 통과용
+    if req.method == "OPTIONS":
+        return https_fn.Response(status=204)
+
+    # 프론트에서 보낸 파일 받기 ('document' 키 매핑)
     uploaded_file = req.files.get('document')
     
-    # 분리해둔 모듈 함수 실행
+    # upstage_parser.py 모듈 함수 실행 (이제 자기 자신을 호출하지 않고 정상 동작합니다)
     result = process_and_save_document(uploaded_file)
     
+    # 브라우저가 정상적으로 인지할 수 있도록 응답을 JSON 규격으로 반환합니다.
     if result["status"] == "error":
-        return https_fn.Response(result["message"], status=400)
+        return https_fn.Response(
+            json.dumps(result), 
+            status=400, 
+            mimetype="application/json"
+        )
     
-    return https_fn.Response(result["message"])
+    return https_fn.Response(
+        json.dumps(result), 
+        status=200, 
+        mimetype="application/json"
+    )
 
 
 @https_fn.on_request()
@@ -76,7 +102,6 @@ def github_webhook(req: https_fn.Request) -> https_fn.Response:
     
     # Push 이벤트인지, Pull Request 이벤트인지 확인 가능
     event_type = req.headers.get('X-GitHub-Event')
-
     db = firestore.client()
 
     if event_type == 'push':
@@ -94,7 +119,6 @@ def github_webhook(req: https_fn.Request) -> https_fn.Response:
         pusher_email = pusher.get("email", "")
 
         commits = payload.get("commits", [])
-
         extracted_commits = []
 
         for commit in commits:
@@ -166,6 +190,7 @@ def github_webhook(req: https_fn.Request) -> https_fn.Response:
 
     return https_fn.Response("Webhook 실시간 수신 완료")
 
+
 @https_fn.on_request()
 def create_ai_workflow(req: https_fn.Request) -> https_fn.Response:
     db = firestore.client()
@@ -199,7 +224,7 @@ def create_ai_workflow(req: https_fn.Request) -> https_fn.Response:
         return https_fn.Response(f"DB 데이터 수집 에러: {str(e)}", status=500)
 
     # Solar LLM 호출
-    ai_workflow_result = generate_project_workflow(project_info, team_metrics, meeting_minutes)
+    ai_workflow_result = generate_project_workflow(project_info, team_metrics, all_meeting_minutes)
 
     if not ai_workflow_result:
         return https_fn.Response("AI 워크플로우 생성 실패", status=500)

@@ -1,0 +1,250 @@
+[debug] [2026-05-21T04:08:47.578Z] ----------------------------------------------------------------------
+[debug] [2026-05-21T04:08:47.580Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\SAMSUNG\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start
+[debug] [2026-05-21T04:08:47.580Z] CLI Version:   15.18.0
+[debug] [2026-05-21T04:08:47.580Z] Platform:      win32
+[debug] [2026-05-21T04:08:47.580Z] Node Version:  v24.15.0
+[debug] [2026-05-21T04:08:47.580Z] Time:          Thu May 21 2026 13:08:47 GMT+0900 (한국 표준시)
+[debug] [2026-05-21T04:08:47.581Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-05-21T04:08:48.245Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-21T04:08:48.245Z] > authorizing via signed-in user (wjsdbtjs9194@gmail.com)
+[debug] [2026-05-21T04:08:48.294Z] openjdk version "25.0.3" 2026-04-21 LTS
+OpenJDK Runtime Environment Temurin-25.0.3+9 (build 25.0.3+9-LTS)
+
+[debug] [2026-05-21T04:08:48.294Z] OpenJDK 64-Bit Server VM Temurin-25.0.3+9 (build 25.0.3+9-LTS, mixed mode, sharing)
+
+[debug] [2026-05-21T04:08:48.301Z] Parsed Java major version: 25
+[info] i  emulators: Starting emulators: functions, firestore, extensions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions, firestore, extensions"}}
+[debug] [2026-05-21T04:08:48.302Z] Checked if tokens are valid: false, expires at: 1779337307559
+[debug] [2026-05-21T04:08:48.302Z] Checked if tokens are valid: false, expires at: 1779337307559
+[debug] [2026-05-21T04:08:48.302Z] > refreshing access token with scopes: []
+[debug] [2026-05-21T04:08:48.303Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-05-21T04:08:48.303Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-05-21T04:08:48.667Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-05-21T04:08:48.667Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-05-21T04:08:48.683Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/projecttracker-3554a [none]
+[debug] [2026-05-21T04:08:48.950Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/projecttracker-3554a 200
+[debug] [2026-05-21T04:08:48.950Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/projecttracker-3554a {"projectNumber":"731662204400","projectId":"projecttracker-3554a","lifecycleState":"ACTIVE","name":"2026-ProjectTracker","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-05-13T13:31:26.009Z"}
+[debug] [2026-05-21T04:08:48.958Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-05-21T04:08:48.958Z] [firestore] Firestore Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-05-21T04:08:48.958Z] [firestore.websocket] websocket server for firestore only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-05-21T04:08:48.958Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2026-05-21T04:08:48.961Z] Write emulator hub locator at C:\Users\SAMSUNG\AppData\Local\Temp\hub-projecttracker-3554a.json
+[debug] [2026-05-21T04:08:48.964Z] [Extensions] Started Extensions emulator, this is a noop.
+[debug] [2026-05-21T04:08:48.967Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-05-21T04:08:48.967Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-05-21T04:08:48.967Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-05-21T04:08:48.967Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] !  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, database, hosting, pubsub, storage, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, auth, database, hosting, pubsub, storage, dataconnect\u001b[22m"}}
+[debug] [2026-05-21T04:08:48.978Z] defaultcredentials: writing to file C:\Users\SAMSUNG\AppData\Roaming\firebase\wjsdbtjs9194_gmail_com_application_default_credentials.json
+[debug] [2026-05-21T04:08:48.978Z] Setting GAC to C:\Users\SAMSUNG\AppData\Roaming\firebase\wjsdbtjs9194_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to C:\\Users\\SAMSUNG\\AppData\\Roaming\\firebase\\wjsdbtjs9194_gmail_com_application_default_credentials.json"}}
+[debug] [2026-05-21T04:08:48.979Z] Checked if tokens are valid: true, expires at: 1779340127667
+[debug] [2026-05-21T04:08:48.979Z] Checked if tokens are valid: true, expires at: 1779340127667
+[debug] [2026-05-21T04:08:48.979Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/projecttracker-3554a/adminSdkConfig [none]
+[debug] [2026-05-21T04:08:49.547Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/projecttracker-3554a/adminSdkConfig 200
+[debug] [2026-05-21T04:08:49.547Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/projecttracker-3554a/adminSdkConfig {"projectId":"projecttracker-3554a","storageBucket":"projecttracker-3554a.firebasestorage.app"}
+[debug] [2026-05-21T04:08:49.568Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2026-05-21T04:08:49.568Z] Ignoring unsupported arg: single_project_mode_error {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: single_project_mode_error"}}
+[debug] [2026-05-21T04:08:49.568Z] Starting Firestore Emulator with command {"binary":"java","args":["-Dgoogle.cloud_firestore.debug_log_level=FINE","-Duser.language=en","-jar","C:\\Users\\SAMSUNG\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.21.0.jar","--host","127.0.0.1","--port",8080,"--websocket_port",9150,"--database-edition","standard","--project_id","projecttracker-3554a","--rules","C:\\Users\\SAMSUNG\\OneDrive\\Desktop\\nextLV\\projectTracker\\firestore.rules","--single_project_mode",true,"--functions_emulator","127.0.0.1:5001"],"optionalArgs":["port","webchannel_port","host","rules","websocket_port","database-edition","functions_emulator","seed_from_export","project_id","single_project_mode"],"joinArgs":false,"shell":false,"port":8080} {"metadata":{"emulator":{"name":"firestore"},"message":"Starting Firestore Emulator with command {\"binary\":\"java\",\"args\":[\"-Dgoogle.cloud_firestore.debug_log_level=FINE\",\"-Duser.language=en\",\"-jar\",\"C:\\\\Users\\\\SAMSUNG\\\\.cache\\\\firebase\\\\emulators\\\\cloud-firestore-emulator-v1.21.0.jar\",\"--host\",\"127.0.0.1\",\"--port\",8080,\"--websocket_port\",9150,\"--database-edition\",\"standard\",\"--project_id\",\"projecttracker-3554a\",\"--rules\",\"C:\\\\Users\\\\SAMSUNG\\\\OneDrive\\\\Desktop\\\\nextLV\\\\projectTracker\\\\firestore.rules\",\"--single_project_mode\",true,\"--functions_emulator\",\"127.0.0.1:5001\"],\"optionalArgs\":[\"port\",\"webchannel_port\",\"host\",\"rules\",\"websocket_port\",\"database-edition\",\"functions_emulator\",\"seed_from_export\",\"project_id\",\"single_project_mode\"],\"joinArgs\":false,\"shell\":false,\"port\":8080}"}}
+[info] i  firestore: Firestore Emulator logging to firestore-debug.log {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator logging to \u001b[1mfirestore-debug.log\u001b[22m"}}
+[debug] [2026-05-21T04:08:49.795Z] WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::allocateMemory has been called by io.netty.util.internal.PlatformDependent0$2 (file:/C:/Users/SAMSUNG/.cache/firebase/emulators/cloud-firestore-emulator-v1.21.0.jar)
+WARNING: Please consider reporting this to the maintainers of class io.netty.util.internal.PlatformDependent0$2
+WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
+ {"metadata":{"emulator":{"name":"firestore"},"message":"WARNING: A terminally deprecated method in sun.misc.Unsafe has been called\nWARNING: sun.misc.Unsafe::allocateMemory has been called by io.netty.util.internal.PlatformDependent0$2 (file:/C:/Users/SAMSUNG/.cache/firebase/emulators/cloud-firestore-emulator-v1.21.0.jar)\nWARNING: Please consider reporting this to the maintainers of class io.netty.util.internal.PlatformDependent0$2\nWARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release\r\n"}}
+[debug] [2026-05-21T04:08:50.333Z] May 21, 2026 1:08:50 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://127.0.0.1:9150
+ {"metadata":{"emulator":{"name":"firestore"},"message":"May 21, 2026 1:08:50 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start\r\nINFO: Started WebSocket server on ws://127.0.0.1:9150\r\n"}}
+[debug] [2026-05-21T04:08:50.371Z] 
+API endpoint: http://127.0.0.1:8080
+Database Edition: STANDARD
+ {"metadata":{"emulator":{"name":"firestore"},"message":"\nAPI endpoint: http://127.0.0.1:8080\nDatabase Edition: STANDARD\n"}}
+[debug] [2026-05-21T04:08:50.371Z] Database Mode: CLOUD_FIRESTORE
+
+If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+
+If you are running a Firestore in Datastore Mode project, run:
+
+   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080
+
+Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
+Dev App Server is now running.
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Database Mode: CLOUD_FIRESTORE\n\nIf you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:\r\n\n   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080\n\nIf you are running a Firestore in Datastore Mode project, run:\r\n\n   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080\n\nNote: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.\r\nDev App Server is now running.\n\r\n"}}
+[info] +  firestore: Firestore Emulator was started in standard edition. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator was started in standard edition."}}
+[info] +  firestore: Firestore Emulator UI websocket is running on 9150. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator UI websocket is running on 9150."}}
+[debug] [2026-05-21T04:08:50.389Z] [Extensions] Connecting Extensions emulator, this is a noop.
+[info] i  functions: Watching "C:\Users\SAMSUNG\OneDrive\Desktop\nextLV\projectTracker\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"C:\\Users\\SAMSUNG\\OneDrive\\Desktop\\nextLV\\projectTracker\\functions\" for Cloud Functions..."}}
+[debug] [2026-05-21T04:08:50.391Z] Customer code is not Node
+[debug] [2026-05-21T04:08:50.391Z] Validating python source
+[debug] [2026-05-21T04:08:50.391Z] Building python source
+[debug] [2026-05-21T04:08:50.392Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-05-21T04:08:50.397Z] Running command with virtualenv: command="C:\Users\SAMSUNG\OneDrive\Desktop\nextLV\projectTracker\functions\venv\Scripts\activate.bat", args=["","&&","python.exe","-c","\"import firebase_functions; import os; print(os.path.dirname(firebase_functions.__file__))\""]
+[debug] [2026-05-21T04:08:50.587Z] stdout: C:\Users\SAMSUNG\OneDrive\Desktop\nextLV\projectTracker\functions\venv\Lib\site-packages\firebase_functions
+
+[debug] [2026-05-21T04:08:50.596Z] Running admin server with args: ["python.exe","\"C:\\Users\\SAMSUNG\\OneDrive\\Desktop\\nextLV\\projectTracker\\functions\\venv\\Lib\\site-packages\\firebase_functions\\private\\serving.py\""] and env: {"GCLOUD_PROJECT":"projecttracker-3554a","K_REVISION":"1","PORT":"80","GOOGLE_CLOUD_QUOTA_PROJECT":"projecttracker-3554a","FUNCTIONS_EMULATOR":"true","TZ":"UTC","FIREBASE_DEBUG_MODE":"true","FIREBASE_DEBUG_FEATURES":"{\"skipTokenVerification\":true,\"enableCors\":true}","FIREBASE_EMULATOR_HUB":"127.0.0.1:4400","FIRESTORE_EMULATOR_HOST":"127.0.0.1:8080","FIREBASE_FIRESTORE_EMULATOR_ADDRESS":"127.0.0.1:8080","CLOUD_EVENTARC_EMULATOR_HOST":"http://127.0.0.1:9299","CLOUD_TASKS_EMULATOR_HOST":"127.0.0.1:9499","FIREBASE_CONFIG":"{\"storageBucket\":\"projecttracker-3554a.firebasestorage.app\",\"projectId\":\"projecttracker-3554a\"}","GOOGLE_APPLICATION_CREDENTIALS":"C:\\Users\\SAMSUNG\\AppData\\Roaming\\firebase\\wjsdbtjs9194_gmail_com_application_default_credentials.json","ADMIN_PORT":"8081"} in C:\Users\SAMSUNG\OneDrive\Desktop\nextLV\projectTracker\functions
+[debug] [2026-05-21T04:08:50.596Z] Running command with virtualenv: command="C:\Users\SAMSUNG\OneDrive\Desktop\nextLV\projectTracker\functions\venv\Scripts\activate.bat", args=["","&&","python.exe","\"C:\\Users\\SAMSUNG\\OneDrive\\Desktop\\nextLV\\projectTracker\\functions\\venv\\Lib\\site-packages\\firebase_functions\\private\\serving.py\""]
+[info]  * Serving Flask app 'serving'
+ * Debug mode: off
+
+[error] WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:8081
+
+[error] Press CTRL+C to quit
+
+[error] 127.0.0.1 - - [21/May/2026 04:08:51] "GET /__/functions.yaml HTTP/1.1" 200 -
+
+[debug] [2026-05-21T04:08:51.351Z] Got response from /__/functions.yaml endpoints:
+  create_ai_workflow:
+    availableMemoryMb: null
+    concurrency: null
+    cpu: gcf_gen1
+    entryPoint: create_ai_workflow
+    httpsTrigger: {}
+    ingressSettings: null
+    labels: {}
+    maxInstances: 10
+    minInstances: null
+    platform: gcfv2
+    secretEnvironmentVariables: []
+    serviceAccountEmail: null
+    timeoutSeconds: null
+  github_webhook:
+    availableMemoryMb: null
+    concurrency: null
+    cpu: gcf_gen1
+    entryPoint: github_webhook
+    httpsTrigger: {}
+    ingressSettings: null
+    labels: {}
+    maxInstances: 10
+    minInstances: null
+    platform: gcfv2
+    secretEnvironmentVariables: []
+    serviceAccountEmail: null
+    timeoutSeconds: null
+  parse_document_api:
+    availableMemoryMb: null
+    concurrency: null
+    cpu: gcf_gen1
+    entryPoint: parse_document_api
+    httpsTrigger: {}
+    ingressSettings: null
+    labels: {}
+    maxInstances: 10
+    minInstances: null
+    platform: gcfv2
+    secretEnvironmentVariables: []
+    serviceAccountEmail: null
+    timeoutSeconds: null
+  process_github_data:
+    availableMemoryMb: null
+    concurrency: null
+    cpu: gcf_gen1
+    entryPoint: process_github_data
+    httpsTrigger: {}
+    ingressSettings: null
+    labels: {}
+    maxInstances: 10
+    minInstances: null
+    platform: gcfv2
+    secretEnvironmentVariables: []
+    serviceAccountEmail: null
+    timeoutSeconds: null
+params: []
+requiredAPIs: []
+specVersion: v1alpha1
+
+[error] 127.0.0.1 - - [21/May/2026 04:08:51] "GET /__/quitquitquit HTTP/1.1" 200 -
+
+[info] +  functions: Loaded functions definitions from source: create_ai_workflow, github_webhook, parse_document_api, process_github_data. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: create_ai_workflow, github_webhook, parse_document_api, process_github_data."}}
+[info] +  functions[us-central1-create_ai_workflow]: http function initialized (http://127.0.0.1:5001/projecttracker-3554a/us-central1/create_ai_workflow). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/projecttracker-3554a/us-central1/create_ai_workflow)."}}
+[info] +  functions[us-central1-github_webhook]: http function initialized (http://127.0.0.1:5001/projecttracker-3554a/us-central1/github_webhook). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/projecttracker-3554a/us-central1/github_webhook)."}}
+[info] +  functions[us-central1-parse_document_api]: http function initialized (http://127.0.0.1:5001/projecttracker-3554a/us-central1/parse_document_api). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/projecttracker-3554a/us-central1/parse_document_api)."}}
+[info] +  functions[us-central1-process_github_data]: http function initialized (http://127.0.0.1:5001/projecttracker-3554a/us-central1/process_github_data). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/projecttracker-3554a/us-central1/process_github_data)."}}
+[debug] [2026-05-21T04:08:51.382Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: . If you are not running the Firebase SQL Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────┬────────────────┬──────────────────────────────────┐
+│ Emulator   │ Host:Port      │ View in Emulator UI              │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Functions  │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions  │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Firestore  │ 127.0.0.1:8080 │ http://127.0.0.1:4000/firestore  │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Extensions │ 127.0.0.1:5001 │ http://127.0.0.1:4000/extensions │
+└────────────┴────────────────┴──────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+┌─────────────────────────┬───────────────┬─────────────────────┐
+│ Extension Instance Name │ Extension Ref │ View in Emulator UI │
+└─────────────────────────┴───────────────┴─────────────────────┘
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[debug] [2026-05-21T04:10:10.212Z] [work-queue] {"queuedWork":["/projecttracker-3554a/us-central1/parse_document_api-2026-05-21T04:10:10.212Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-05-21T04:10:10.212Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/projecttracker-3554a/us-central1/parse_document_api-2026-05-21T04:10:10.212Z"],"workRunningCount":1}
+[debug] [2026-05-21T04:10:10.212Z] Accepted request POST /projecttracker-3554a/us-central1/parse_document_api --> us-central1-parse_document_api
+[debug] [2026-05-21T04:10:10.214Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-05-21T04:10:10.214Z] [functions] Got req.url=/projecttracker-3554a/us-central1/parse_document_api, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/projecttracker-3554a/us-central1/parse_document_api, mapping to path=/"}}
+[debug] [2026-05-21T04:10:10.219Z] Running command with virtualenv: command="C:\Users\SAMSUNG\OneDrive\Desktop\nextLV\projectTracker\functions\venv\Scripts\activate.bat", args=["","&&","functions-framework"]
+[debug] [2026-05-21T04:10:10.227Z] [worker-pool] addWorker(us-central1-parse_document_api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] addWorker(us-central1-parse_document_api)"}}
+[debug] [2026-05-21T04:10:10.227Z] [worker-pool] Adding worker with key us-central1-parse_document_api, total=1 {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] Adding worker with key us-central1-parse_document_api, total=1"}}
+[info] >   * Serving Flask app 'parse_document_api' {"user":" * Serving Flask app 'parse_document_api'\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"\u001b[90m> \u001b[39m  * Serving Flask app 'parse_document_api'\r"}}
+[info] >   * Debug mode: off {"user":" * Debug mode: off\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"\u001b[90m> \u001b[39m  * Debug mode: off\r"}}
+[info] >  WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead. {"user":"WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"\u001b[90m> \u001b[39m WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.\r"}}
+[info] >   * Running on http://127.0.0.1:8406 {"user":" * Running on http://127.0.0.1:8406\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"\u001b[90m> \u001b[39m  * Running on http://127.0.0.1:8406\r"}}
+[info] >  Press CTRL+C to quit {"user":"Press CTRL+C to quit\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"\u001b[90m> \u001b[39m Press CTRL+C to quit\r"}}
+[info] >  127.0.0.1 - - [21/May/2026 04:10:11] "GET /__/health HTTP/1.1" 400 - {"user":"127.0.0.1 - - [21/May/2026 04:10:11] \"GET /__/health HTTP/1.1\" 400 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [21/May/2026 04:10:11] \"GET /__/health HTTP/1.1\" 400 -\r"}}
+[debug] [2026-05-21T04:10:11.104Z] [worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"[worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: IDLE"}}
+[debug] [2026-05-21T04:10:11.104Z] [worker-pool] submitRequest(triggerId=us-central1-parse_document_api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-parse_document_api)"}}
+[info] i  functions: Beginning execution of "us-central1-parse_document_api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Beginning execution of \"us-central1-parse_document_api\""}}
+[debug] [2026-05-21T04:10:11.105Z] [worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"[worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: BUSY"}}
+[debug] [2026-05-21T04:10:11.379Z] May 21, 2026 1:10:11 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"May 21, 2026 1:10:11 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\r\nINFO: Detected HTTP/2 connection.\r\n"}}
+[debug] [2026-05-21T04:10:11.401Z] May 21, 2026 1:10:11 PM io.grpc.netty.TcpMetrics loadEpollInfo
+INFO: Epoll available during static init of TcpMetrics:false
+ {"metadata":{"emulator":{"name":"firestore"},"message":"May 21, 2026 1:10:11 PM io.grpc.netty.TcpMetrics loadEpollInfo\r\nINFO: Epoll available during static init of TcpMetrics:false\r\n"}}
+[info] >  127.0.0.1 - - [21/May/2026 04:10:11] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [21/May/2026 04:10:11] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [21/May/2026 04:10:11] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-05-21T04:10:11.991Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-parse_document_api" in 886.7423ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finished \"us-central1-parse_document_api\" in 886.7423ms"}}
+[debug] [2026-05-21T04:10:11.992Z] [worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"[worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: IDLE"}}
+[debug] [2026-05-21T04:10:11.992Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-05-21T04:10:11.992Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-05-21T04:10:11.992Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-05-21T04:21:51.125Z] [work-queue] {"queuedWork":["/projecttracker-3554a/us-central1/parse_document_api-2026-05-21T04:21:51.124Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-05-21T04:21:51.125Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/projecttracker-3554a/us-central1/parse_document_api-2026-05-21T04:21:51.124Z"],"workRunningCount":1}
+[debug] [2026-05-21T04:21:51.125Z] Accepted request POST /projecttracker-3554a/us-central1/parse_document_api --> us-central1-parse_document_api
+[debug] [2026-05-21T04:21:51.129Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-05-21T04:21:51.129Z] [functions] Got req.url=/projecttracker-3554a/us-central1/parse_document_api, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/projecttracker-3554a/us-central1/parse_document_api, mapping to path=/"}}
+[debug] [2026-05-21T04:21:51.129Z] [worker-pool] submitRequest(triggerId=us-central1-parse_document_api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-parse_document_api)"}}
+[info] i  functions: Beginning execution of "us-central1-parse_document_api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Beginning execution of \"us-central1-parse_document_api\""}}
+[debug] [2026-05-21T04:21:51.130Z] [worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"[worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: BUSY"}}
+[info] >  127.0.0.1 - - [21/May/2026 04:21:52] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [21/May/2026 04:21:52] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [21/May/2026 04:21:52] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-05-21T04:21:52.121Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-parse_document_api" in 991.261ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finished \"us-central1-parse_document_api\" in 991.261ms"}}
+[debug] [2026-05-21T04:21:52.122Z] [worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"[worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: IDLE"}}
+[debug] [2026-05-21T04:21:52.122Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-05-21T04:21:52.122Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-05-21T04:21:52.122Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-05-21T04:35:35.114Z] [work-queue] {"queuedWork":["/projecttracker-3554a/us-central1/parse_document_api-2026-05-21T04:35:35.114Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-05-21T04:35:35.114Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/projecttracker-3554a/us-central1/parse_document_api-2026-05-21T04:35:35.114Z"],"workRunningCount":1}
+[debug] [2026-05-21T04:35:35.114Z] Accepted request POST /projecttracker-3554a/us-central1/parse_document_api --> us-central1-parse_document_api
+[debug] [2026-05-21T04:35:35.118Z] [functions] Runtime ready! Sending request! {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Runtime ready! Sending request!"}}
+[debug] [2026-05-21T04:35:35.118Z] [functions] Got req.url=/projecttracker-3554a/us-central1/parse_document_api, mapping to path=/ {"metadata":{"emulator":{"name":"functions"},"message":"[functions] Got req.url=/projecttracker-3554a/us-central1/parse_document_api, mapping to path=/"}}
+[debug] [2026-05-21T04:35:35.118Z] [worker-pool] submitRequest(triggerId=us-central1-parse_document_api) {"metadata":{"emulator":{"name":"functions"},"message":"[worker-pool] submitRequest(triggerId=us-central1-parse_document_api)"}}
+[info] i  functions: Beginning execution of "us-central1-parse_document_api" {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Beginning execution of \"us-central1-parse_document_api\""}}
+[debug] [2026-05-21T04:35:35.119Z] [worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: BUSY {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"[worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: BUSY"}}
+[info] >  127.0.0.1 - - [21/May/2026 04:35:35] "POST / HTTP/1.1" 200 - {"user":"127.0.0.1 - - [21/May/2026 04:35:35] \"POST / HTTP/1.1\" 200 -\r","metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"\u001b[90m> \u001b[39m 127.0.0.1 - - [21/May/2026 04:35:35] \"POST / HTTP/1.1\" 200 -\r"}}
+[debug] [2026-05-21T04:35:35.556Z] Finishing up request with event=pause {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finishing up request with event=pause"}}
+[info] i  functions: Finished "us-central1-parse_document_api" in 437.4121ms {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finished \"us-central1-parse_document_api\" in 437.4121ms"}}
+[debug] [2026-05-21T04:35:35.557Z] [worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: IDLE {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"[worker-us-central1-parse_document_api-c00e31a2-95e9-4aaf-b521-69c09f85019c]: IDLE"}}
+[debug] [2026-05-21T04:35:35.557Z] Finishing up request with event=finish {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finishing up request with event=finish"}}
+[debug] [2026-05-21T04:35:35.557Z] Finishing up request with event=close {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-parse_document_api"},"extension":{},"message":"Finishing up request with event=close"}}
+[debug] [2026-05-21T04:35:35.557Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
